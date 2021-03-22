@@ -134,12 +134,12 @@ public _native_rpg_set_animinterrupt(iPlugin,iParams){
 	gAnimInterrupt[get_param(1)] = get_param_f(2)
 }
 
-// native rpg_delaydmg_g(ent, Float:damage, Float:delay, Float:distance, f2f=1)
+// native rpg_delaydmg_g(ent, Float:damage, Float:delay, Float:distance, dmgType, f2f=1)
 public _native_rpg_delaydmg(iPlugin,iParams){
-	if(iParams != 5)
+	if(iParams != 6)
 		return
 	
-	dmgDelay(get_param(1), get_param_f(2), get_param_f(3), get_param_f(4), get_param(5))
+	dmgDelay(get_param(1), get_param_f(2), get_param_f(3), get_param_f(4), get_param(5), get_param(6))
 }
 
 public _native_set_user_extradamage(iPlugin,iParams){

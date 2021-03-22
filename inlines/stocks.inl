@@ -227,13 +227,14 @@ stock SetAnimationGaptime(iEntity, iAnim, Float:framerate=1.0, again=0, Float:ga
 
 
 // 怪物实体,伤害,延迟,距离,是否需要正面(1正面 -1背面 0不考虑)
-stock dmgDelay(ent, Float:damage, Float:delay, Float:distance, f2f=1){
-	new data[4]
+stock dmgDelay(ent, Float:damage, Float:delay, Float:distance, dmgType=DMG_FALL, f2f=1){
+	new data[5]
 	data[0] = ent
 	data[1] = floatround(damage)
 	data[2] = floatround(distance)
 	data[3] = f2f
-	set_task(delay, "task_attackdelay", ent + TASK3, data, 4)
+	data[4] = dmgType
+	set_task(delay, "task_attackdelay", ent + TASK3, data, 5)
 }
 
 stock can_see_entity_f2f(ent, ent2)
@@ -724,4 +725,12 @@ stock remove_all_enemy(){
 		if(IsMonster(ent))
 			set_pev(ent, pev_enemy, 0)
 	}
+}
+
+stock setMonsterRandomEnemy(ent){
+	new rndPlayer = findRandomEnemy()
+	if(!gDoNotCreatePrincess)
+		set_pev(ent, pev_enemy, rndPlayer?(random_num(0,1)?rndPlayer:gPrincess):gPrincess)
+	else
+		set_pev(ent, pev_enemy, rndPlayer)
 }

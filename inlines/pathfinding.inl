@@ -13,13 +13,15 @@ reset_pathfindvars(iEntity)
 walk_in_path(ent){
 	static Float:goal[3], Float:origin[3], enemy, Float:tmpVel[3]
 	pev(ent, pev_origin, origin)
-	pev(enemy, pev_origin, goal)
+
 	enemy = pev(ent, pev_enemy)
+	pev(enemy, pev_origin, goal)
+	
 	static Float:attackradius
 	attackradius = GetMD_float(ent, md_attackradius)
 	attackradius = attackradius?attackradius:80.0
 	
-	if(length2D(origin, goal) <= attackradius && floatabs(origin[2] - goal[2]) <= attackradius * 1.35){ // 到目标处了(攻击距离)
+	if(enemy <= gMaxPlayers && length2D(origin, goal) <= attackradius && floatabs(origin[2] - goal[2]) <= attackradius * 1.35){ // 到目标处了(攻击距离)
 		ExecuteForward(g_fwAttack, g_fwDummyResult, ent, enemy)
 		SetEntityTurn(ent, goal, 0)
 		if(g_fwDummyResult > 0)

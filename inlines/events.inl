@@ -48,7 +48,7 @@ public fw_StartFrame_Post(){
 				}
 			}
 
-			if(is_user_connected(id) && team>0 && team<3  && !is_user_alive(id) && IsNonPlayer(gPrincess)){
+			if(is_user_connected(id) && team>0 && team<3  && !is_user_alive(id) && (gDoNotCreatePrincess || IsNonPlayer(gPrincess))){
 				respawn = gUserRespawnCD[id] - fCurTime + gUserLastDeath[id]
 				if(respawn >= 0.0){
 					client_print(id, print_center, "即将复活: %1.f", respawn)
@@ -56,12 +56,14 @@ public fw_StartFrame_Post(){
 					client_print(id, print_center, " ")
 					ExecuteHamB(Ham_CS_RoundRespawn, id)
 
-					// 设置在公主附近的路点复活
-					new Float:princessOri[3], Float:respawnOri[3]
-					pev(gPrincess, pev_origin, princessOri)
-					navmesh_getRandomAreaPos(princessOri, 0.0, 800.0, respawnOri)
-					set_pev(id, pev_origin, respawnOri)
-					ClientCommand_UnStick (id)
+					if(!gDoNotCreatePrincess){
+						// 设置在公主附近的路点复活
+						new Float:princessOri[3], Float:respawnOri[3]
+						pev(gPrincess, pev_origin, princessOri)
+						navmesh_getRandomAreaPos(princessOri, 0.0, 800.0, respawnOri)
+						set_pev(id, pev_origin, respawnOri)
+						ClientCommand_UnStick (id)
+					}
 				}
 			}
 		}
@@ -71,11 +73,11 @@ public fw_StartFrame_Post(){
 }
 
 public fw_PlayerKilled(victim, iAttacker, shouldgib){
-	gUserScore[iAttacker] = max(gUserScore[iAttacker] - gCurLevel*5, 0)
-	UpdateFrags(iAttacker, gUserScore[iAttacker], -1, 1)
+	gUserScore[victim] = max(gUserScore[victim] - gCurLevel*5, 0)
+	UpdateFrags(victim, gUserScore[victim], -1, 1)
 
-	gUserLastDeath[iAttacker] = get_gametime()
-	gUserRespawnCD[iAttacker] = floatmin(10.0, gUserRespawnCD[iAttacker] + 3.0)
+	gUserLastDeath[victim] = get_gametime()
+	gUserRespawnCD[victim] = floatmin(10.0, gUserRespawnCD[victim] + 3.0)
 }
 
 public client_putinserver(id){
@@ -92,6 +94,7 @@ public client_putinserver(id){
 public client_disconnect(id){
 	// 最后一个玩家退出 结束回合
 	if(get_csteam_num(1, 0) + get_csteam_num(2, 0) == 1){
+		remove_task(TASK7)
 		set_task(3.0, "task_resetround", TASK7)
 		gIsGameStarted = 0
 	}
@@ -120,27 +123,28 @@ public EventStartRound(){
 
 	CheckMonster = get_gametime() + 20.0
 
-	remove_all_enemy()
+	// remove_all_enemy() // 看上去不需要它了
 	gIsGameStarted = 1
 	gRoundStart = 1
-
-	new Float:origin[3]
-	while(true){
-		if( (!gPrincessCenter[0]&&!gPrincessCenter[1]&&!gPrincessCenter[2]&&navmesh_randomPosition(origin))
-		|| ((gPrincessCenter[0]||gPrincessCenter[1]||gPrincessCenter[2])&& navmesh_getRandomAreaPos(gPrincessCenter, 0.0, 1200.0, origin)) ){
-			origin[2] += 41.0
-			if(is_hull_vacant(origin)){
-				resetPrincess(gPrincess, origin)
-				client_color(0, "/ctr公主/y出现在了地图上,/g找到/y并/g保护/y她!")
-				gPrincessTime = get_gametime()
+	if(!gDoNotCreatePrincess){
+		new Float:origin[3]
+		while(gRoundStart){
+			if( (!gPrincessCenter[0]&&!gPrincessCenter[1]&&!gPrincessCenter[2]&&navmesh_randomPosition(origin))
+			|| ((gPrincessCenter[0]||gPrincessCenter[1]||gPrincessCenter[2])&& navmesh_getRandomAreaPos(gPrincessCenter, 0.0, 1200.0, origin)) ){
+				origin[2] += 41.0
+				if(is_hull_vacant(origin)){
+					resetPrincess(gPrincess, origin)
+					client_color(0, "/ctr公主/y出现在了地图上,/g找到/y并/g保护/y她!")
+					gPrincessTime = get_gametime()
+					break
+				}
+			}
+			else{
+				log_amx("公主初始化失败,可能因为没有路点文件")
+				remove_task(TASK6)
+				gIsGameStarted = 0
 				break
 			}
-		}
-		else{
-			log_amx("公主初始化失败,可能因为没有路点文件")
-			remove_task(TASK6)
-			gIsGameStarted = 0
-			break
 		}
 	}
 }
@@ -152,9 +156,25 @@ public EventHLTV(){
 	remove_all_npc()
 }
 
-public HAM_HostageKilled_post(ent, killer){
-	set_hudmessage(120,54,54, 0.02, 0.62, 1, 0.0, 5.5, 0.2, 0.2, HUD_GAMEMSG)
-	show_hudmessage(0, "任务失败: 公主已经被杀害...")
+public msgTeamInfo(iMsgID, iDest, iReceiver){
+	// 最后一个玩家换队伍至观察者
+	if(get_csteam_num(1, 0) + get_csteam_num(2, 0) == 0){
+		remove_task(TASK7)
+		set_task(3.0, "task_resetround", TASK7)
+		gIsGameStarted = 0
+	}
+}
 
-	server_cmd("endround T")
+
+public HAM_HostageKilled_post(iEntity, inflictor, attacker, Float:damage, damagetype){
+	if(!pev_valid(iEntity)) return HAM_IGNORED
+	
+	if(pev(iEntity, pev_deadflag) != DEAD_NO){
+		set_hudmessage(120,54,54, 0.02, 0.62, 1, 0.0, 5.5, 0.2, 0.2, HUD_GAMEMSG)
+		show_hudmessage(0, "任务失败: 公主已经被杀害...")
+
+		server_cmd("endround T")
+	}
+
+	return HAM_IGNORED
 }

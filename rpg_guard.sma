@@ -52,6 +52,8 @@ public plugin_init()
 	g_AllocString = engfunc(EngFunc_AllocString, "info_target")
 	g_msgScoreInfo = get_user_msgid("ScoreInfo")
 
+	register_message(get_user_msgid("TeamInfo"), "msgTeamInfo")
+
 	register_forward(FM_Touch, "FM_NpcTouch")
 	unregister_forward(FM_Spawn, gFwdSpawn)
 
@@ -84,7 +86,7 @@ public plugin_init()
 
 	register_forward(FM_ChangeLevel, "fw_FMChangeLevel")
 
-	RegisterHam(Ham_Killed, "hostage_entity", "HAM_HostageKilled_post", 1)
+	RegisterHam(Ham_TakeDamage, "hostage_entity", "HAM_HostageKilled_post", 1)
 
 	server_cmd("endround 0")
 }
@@ -97,9 +99,11 @@ public plugin_precache(){
 	spr_blood_drop = engfunc(EngFunc_PrecacheModel, "sprites/blood.spr")
 	gFwdSpawn = register_forward(FM_Spawn, "fw_Spawn")
 
-	gPrincess = engfunc(EngFunc_CreateNamedEntity, engfunc(EngFunc_AllocString, "hostage_entity"))
-	if(pev_valid(gPrincess))
-		DispatchSpawn(gPrincess)
+	if(!gDoNotCreatePrincess){
+		gPrincess = engfunc(EngFunc_CreateNamedEntity, engfunc(EngFunc_AllocString, "hostage_entity"))
+		if(pev_valid(gPrincess))
+			DispatchSpawn(gPrincess)
+	}
 }
 
 public plugin_natives(){
@@ -156,7 +160,7 @@ create_monster(Float:origin[3], Float:angles[3], iMonsterlevel, szClass[], szNam
 	set_pev(iEntity, pev_gamestate, 1)
 	set_pev(iEntity, pev_angles, angles)
 	set_pev(iEntity, PEV_BOSSLEVEL, iMonsterlevel)
-	set_pev(iEntity, PEV_MONSTER, 112)
+	set_pev(iEntity, PEV_MONSTER, MONSTER)
 	set_pev(iEntity, pev_flags, pev(iEntity, pev_flags) | FL_MONSTER)
 	set_pev(iEntity, pev_nextthink, get_gametime()+2.0)
 	set_pev(iEntity, pev_sequence, 0)
@@ -178,10 +182,12 @@ create_monster(Float:origin[3], Float:angles[3], iMonsterlevel, szClass[], szNam
 		origin[2] += (floatabs(fMinsize[2]) + 5.0)
 		engfunc(EngFunc_SetOrigin, iEntity, origin)
 		gMonsterEntCounter++
+		setMonsterRandomEnemy(iEntity)
 		ExecuteForward(g_fwPostCreate, g_fwDummyResult, iEntity)
 		return  iEntity
 	}else{
 		if(fw_afterCreate(iEntity, origin, (floatabs(fMinsize[2]) + 5.0))){
+			setMonsterRandomEnemy(iEntity)
 			ExecuteForward(g_fwPostCreate, g_fwDummyResult, iEntity)
 			return iEntity
 		}
@@ -366,16 +372,18 @@ public HAM_NpcTakeDamage_post(iEntity, inflictor, attacker, Float:damage, damage
 }
 
 public FM_NpcTouch(ent, id){
-	if(IsMonster(ent) && IsMonster(id)){
-		static Float:velocity2[3]
-		static Float:vel[3]
-		pev(ent, pev_velocity, vel)
-		get_speed_vector_to_entity(id, ent, 110.0 , velocity2)
-		xs_vec_add(velocity2, vel, velocity2)
-		velocity2[2] = vel[2]
-		set_pev(ent, pev_velocity, velocity2)
-	}else if(IsMonster(ent) && IsNonPlayer(id)){
-		set_pev(ent, pev_enemy, id)
+	if(IsMonster(ent)){
+		if(IsMonster(id)){
+			static Float:velocity2[3]
+			static Float:vel[3]
+			pev(ent, pev_velocity, vel)
+			get_speed_vector_to_entity(id, ent, 110.0 , velocity2)
+			xs_vec_add(velocity2, vel, velocity2)
+			velocity2[2] = vel[2]
+			set_pev(ent, pev_velocity, velocity2)
+		}else if(IsNonPlayer(id)){
+			set_pev(ent, pev_enemy, id)
+		}
 	}
 
 	return FMRES_IGNORED

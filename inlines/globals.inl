@@ -76,9 +76,11 @@ new gFwdSpawn, gMapEntCounter
 
 /* 游戏规则变量 */
 
+new gDoNotCreatePrincess = 0
+
 #define MAX_LEVEL 30
 new gMonsterEntCounter
-new gMaxMonster = 80
+new gMaxMonster = 50
 new gCurLevel = 0, gMaxLevel = 0
 new gLevelScore[MAX_LEVEL]
 new gLevelName[MAX_LEVEL][32]

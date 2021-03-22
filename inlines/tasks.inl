@@ -22,7 +22,7 @@ public task_find(tid){
 	if(!enemy || !pev_valid(enemy)
 	|| (enemy <= gMaxPlayers && !is_user_alive(enemy))
 	|| (enemy > gMaxPlayers && IsNonPlayer(enemy) && !IsNonPlayerAlive(enemy))){
-		set_pev(ent, pev_enemy, findRandomEnemy())
+		setMonsterRandomEnemy(ent)
 		set_task(2.0, "task_find", tid)
 		return
 	}
@@ -80,11 +80,23 @@ public task_attackdelay(data[]){
 	new Float:damage = float(data[1])
 	new distance = data[2]
 	new f2f = data[3]
+	new dmgType = data[4]
 
-	for(new id=1;id<gMaxPlayers;++id){
+	new Float:o1[3], Float:o2[3]
+	pev(ent, pev_origin, o1)
+
+	for(new id=1;id<=gMaxPlayers;++id){
 		if(!is_user_alive(id) || (f2f==1 && !can_see_entity_f2f(ent, id)) || (f2f==-1 && can_see_entity_f2f(ent, id))) continue
-		if(entity_range(ent, id) > distance) continue
-		ExecuteHamB(Ham_TakeDamage, id, ent, ent, damage, DMG_FALL)
+		pev(id, pev_origin, o2)
+		if(length2D(o1, o2) > distance || floatabs(o1[2]-o1[2]) > distance) continue
+		ExecuteHamB(Ham_TakeDamage, id, ent, ent, damage, dmgType)
+	}
+
+	for(new other=gMaxPlayers+1;other<512;++other){
+		if(!IsNonPlayer(other) || !IsNonPlayerAlive(other) || (f2f==1 && !can_see_entity_f2f(ent, other)) || (f2f==-1 && can_see_entity_f2f(ent, other))) continue
+		pev(other, pev_origin, o2)
+		if(length2D(o1, o2) > distance || floatabs(o1[2]-o1[2]) > distance) continue
+		ExecuteHamB(Ham_TakeDamage, other, ent, ent, damage, dmgType)
 	}
 }
 

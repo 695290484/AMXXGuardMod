@@ -17,7 +17,7 @@ stock SetMD_float(ent, md, Float:value) set_pdata_float(ent, md, value)
 #if !defined EXCLUDE_SELF
 
 native rpg_create_g(Float:origin[3], Float:angles[3], iMonsterlevel, szClass[], szName[], Float:fHealth,  Float:fMinsize[3], Float:fMaxsize[3], iModelID) // 创建怪物
-native rpg_delaydmg_g(ent, Float:damage, Float:delay, Float:distance, f2f=1) // 延迟伤害(f2f的1表示正面,-1表示背面,0无要求)
+native rpg_delaydmg_g(ent, Float:damage, Float:delay, Float:distance, dmgType, f2f=1) // 延迟伤害(f2f的1表示正面,-1表示背面,0无要求)
 native rpg_get_princess() // 获得公主的实体id
 
 
