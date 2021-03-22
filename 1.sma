@@ -1,15 +1,10 @@
 #include <amxmodx>
 #include <fakemeta>
 #include "rpg_guard.inc"
-//#include "navmesh.inc"
 
-new Float:origin2[33][3]
 public plugin_init()
 {
-	register_clcmd("say go", "go")
-	register_clcmd("say zb", "create")
 
-	register_srvcmd("test", "test")
 }
 
 new zb, animCode
@@ -27,41 +22,6 @@ public rpg_fw_npc_refresh(level, numleft){
 			rpg_create_g({0.0,0.0,0.0}, {0.0,0.0,0.0}, 1, "rpg_g_abm", "普通僵尸", 100.0, {-16.0,-16.0,-36.0}, {16.0,16.0,36.0}, zb)
 		}
 	}
-}
-
-
-public test(){
-	//new Float:goal[3]
-	//new index = navmesh_getRandomAreaPos(origin2[1], 100.0, 4000.0, goal)
-	//server_print("target:%d | %f,%f,%f", index, goal[0], goal[1], goal[2])
-	new ent = rpg_create_g({0.0,0.0,0.0}, {0.0,0.0,0.0}, 1, "rpg_g_abm", "普通僵尸", 100.0, {-16.0,-16.0,-36.0}, {16.0,16.0,36.0}, zb)
-	new Float:goal[3];pev(ent, pev_origin, goal)
-	server_print("target:%d | %f,%f,%f", ent, goal[0], goal[1], goal[2])
-}
-
-
-public go(id){
-	pev(id, pev_origin, origin2[id])
-}
-
-public create(id){
-	new ent = rpg_create_g(origin2[id], {0.0,0.0,0.0}, 1, "rpg_g_abm", "普通僵尸", 100.0, {-16.0,-16.0,-36.0}, {16.0,16.0,36.0}, zb)
-	if(ent){
-		new Float:goal[3];pev(ent, pev_origin, goal)
-		server_print("target:%d | %f,%f,%f", ent, goal[0], goal[1], goal[2])
-	}
-}
-
-stock findRandomEnemy(){
-	new players[32], count
-	for(new id=1;id<=get_maxplayers();++id)
-	{
-		if(is_user_alive(id)){
-			players[count] = id
-			count++
-		}
-	}
-	return count>0?players[random_num(0, count-1)]:0
 }
 
 // 行为
@@ -95,9 +55,6 @@ public rpg_fw_npctakedamage_post(iEntity, attacker, Float:damage, damagetype, he
 }
 
 public rpg_fw_npccreate_post(ent){
-	if(random_num(0,1)) set_pev(ent, pev_enemy, rpg_get_princess())
-	else set_pev(ent, pev_enemy, findRandomEnemy())
-
 	set_pev(ent, pev_maxspeed, 260.0)		// 最大移速
 	rpg_animation_g(ent, 12)			// 静止动作
 	SetMD_float(ent, md_attackradius, 95.0)		// 普攻范围
@@ -134,4 +91,16 @@ public rpg_fw_npcthink_pre(ent){
 		rpg_animation_g(ent, 13, animCode)
 	else
 		rpg_animation_g(ent, 12)
+}
+
+stock findRandomEnemy(){
+	new players[32], count
+	for(new id=1;id<=get_maxplayers();++id)
+	{
+		if(is_user_alive(id)){
+			players[count] = id
+			count++
+		}
+	}
+	return count>0?players[random_num(0, count-1)]:0
 }

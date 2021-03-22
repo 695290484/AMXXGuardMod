@@ -48,6 +48,7 @@ public plugin_init()
 	g_fwAttack =  CreateMultiForward("rpg_fw_npc_attack", ET_CONTINUE, FP_CELL, FP_CELL)
 
 	g_fwRefresh =  CreateMultiForward("rpg_fw_npc_refresh", ET_CONTINUE, FP_CELL, FP_CELL)
+	g_fwMissionTrigger =  CreateMultiForward("rpg_fw_mission_tigger", ET_IGNORE, FP_CELL, FP_CELL)
 
 	g_AllocString = engfunc(EngFunc_AllocString, "info_target")
 	g_msgScoreInfo = get_user_msgid("ScoreInfo")
@@ -71,8 +72,9 @@ public plugin_init()
 	spawn_use_csdm = register_cvar("rg_spawn_use_csdm", "1")
 	load_spawns()
 
-	server_cmd("mp_round_infinite 1")
-	server_cmd("mp_maxmoney 999999999")
+	server_cmd("mp_round_infinite 1;mp_maxmoney 999999999")
+	server_cmd("mp_infinite_ammo 2;mp_give_player_c4 0;mp_buy_anywhere 0")
+	server_cmd("mp_autoteambalance 0")
 
 	// 初始化游戏规则
 	init_gamerules()
@@ -89,6 +91,8 @@ public plugin_init()
 	RegisterHam(Ham_TakeDamage, "hostage_entity", "HAM_HostageKilled_post", 1)
 
 	server_cmd("endround 0")
+
+	register_clcmd("chooseteam", "clcmd_changeteam")
 }
 
 public plugin_precache(){

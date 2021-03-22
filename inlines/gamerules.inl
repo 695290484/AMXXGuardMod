@@ -25,6 +25,7 @@ setupLevel(level, levelName[], targetScore){
 
 /* 每隔几秒计算一下 */
 updateLevel(){
+	new lastLevel = gCurLevel
 	new allScore = calcAllScore()
 	for(new i = 0; i < MAX_LEVEL; ++i){
 		if(!gLevelScore[i])
@@ -41,6 +42,9 @@ updateLevel(){
 
 		CheckMonster = get_gametime() + 9999.0
 		server_cmd("endround CT")
+		ExecuteForward(g_fwMissionTrigger, g_fwDummyResult, mt_MissionOver, 2)
+	}else if(lastLevel != gCurLevel){
+		ExecuteForward(g_fwMissionTrigger, g_fwDummyResult, mt_ChangeLevel, gCurLevel)
 	}
 }
 

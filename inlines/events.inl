@@ -26,10 +26,12 @@ public fw_StartFrame_Post(){
 	if(fCurTime-checkSeconds >= 1.0){
 		checkSeconds = fCurTime
 
-		static tar, body, monstername[32],Float:hp,Float:maxhp
+		//static tar, body, monstername[32],Float:hp,Float:maxhp
 		static team, Float:respawn
 		for(new id = 1; id<=gMaxPlayers; ++id){
 			team = get_user_team(id)
+/*			
+			// 指向目标显示信息
 			if(is_user_alive(id)){
 				get_user_aiming(id,tar,body)
 				if((IsMonster(tar) || IsNonPlayer(tar)) && (gUserTargetMonster[id] != tar || fCurTime - gUserLastAttack[id] > 5.0)){
@@ -46,6 +48,20 @@ public fw_StartFrame_Post(){
 						}
 					}
 				}
+			}
+*/
+
+			if(is_user_alive(id)){
+				set_hudmessage(0, 200, 200, 0.01, 0.94, 0, 0.0, 2.0, 0.0, 0.0, HUD_SHOWINFO)
+				show_hudmessage(id, "生命值:%d/%d", pev(id,pev_health), pev(id,pev_max_health))
+
+				for(new ob = 1; ob <= gMaxPlayers; ++ob){
+					if(ob != id && is_user_connected(ob) && !is_user_alive(ob) && pev(ob, pev_iuser2) == id){
+						set_hudmessage(0, 200, 200, 0.01, 0.94, 0, 0.0, 2.0, 0.0, 0.0, HUD_SHOWINFO)
+						show_hudmessage(ob, "生命值:%d/%d", pev(id,pev_health), pev(id,pev_max_health))
+					}
+				}
+
 			}
 
 			if(is_user_connected(id) && team>0 && team<3  && !is_user_alive(id) && (gDoNotCreatePrincess || IsNonPlayer(gPrincess))){
@@ -86,6 +102,7 @@ public client_putinserver(id){
 	gUserLastDeath[id] = 0.0
 	gUserTargetMonster[id] = 0
 	gUserLastAttack[id] = 0.0
+	gMenuType[id] = 0
 
 	remove_task(TASK6)
 	set_task(3.0, "task_checkplayercount", TASK6, _, _, "b")
@@ -112,8 +129,6 @@ public fw_FMChangeLevel(){
 
 public EventRoundEnd(){
 	gRoundStart = 0
-	//for(new id=1;id<=gMaxPlayers;++id)
-	//	client_putinserver(id)
 }
 
 public EventStartRound(){
@@ -136,6 +151,7 @@ public EventStartRound(){
 					resetPrincess(gPrincess, origin)
 					client_color(0, "/ctr公主/y出现在了地图上,/g找到/y并/g保护/y她!")
 					gPrincessTime = get_gametime()
+					ExecuteForward(g_fwMissionTrigger, g_fwDummyResult, mt_PrincessShowUp, gPrincess)
 					break
 				}
 			}
@@ -174,7 +190,73 @@ public HAM_HostageKilled_post(iEntity, inflictor, attacker, Float:damage, damage
 		show_hudmessage(0, "任务失败: 公主已经被杀害...")
 
 		server_cmd("endround T")
+		ExecuteForward(g_fwMissionTrigger, g_fwDummyResult, mt_MissionOver, 1)
 	}
 
 	return HAM_IGNORED
+}
+
+public clcmd_changeteam(id)
+{
+	if(!is_user_connected(id))
+		return PLUGIN_CONTINUE;
+
+	new team = get_pdata_int(id, 114, 5)
+	
+	if (team == 3 || !team)
+		return PLUGIN_CONTINUE;
+
+	new Float:gtime = get_gametime()
+	if(gtime - mTime[id] <0.4){
+		if(mCount[id] <3){
+			mCount[id] ++
+			if(mCount[id] >=3){
+				mCount[id] = 0
+				if(gMenuType[id]){
+					gMenuType[id] = 0
+					client_print(id, print_chat, "* 已切换至玩家菜单")
+				}else{
+					gMenuType[id] = 1
+					client_print(id, print_chat, "* 已切换至队伍菜单")
+				}
+			}
+		}
+	}else{
+		mCount[id] = 0
+	}
+	mTime[id] = gtime
+
+	if(gMenuType[id])
+		return PLUGIN_CONTINUE;
+	
+	// M菜单
+	rpg_mainmenu(id)
+	return PLUGIN_HANDLED;
+}
+
+rpg_mainmenu(id){
+	set_pdata_int(id, 205, 0)
+
+	new menuid, menu[256]
+	formatex(menu, charsmax(menu), "\r#. \dRPG-Guard模式^n\dQ群:\r1080724568")
+	menuid = menu_create(menu, "mainmenuhandle")
+	formatex(menu, charsmax(menu), "\w 武器菜单")
+	menu_additem(menuid, menu)
+
+	menu_setprop(menuid, MPROP_EXITNAME, "退出")
+	menu_setprop(menuid, MPROP_BACKNAME, "后退")
+	menu_setprop(menuid, MPROP_NEXTNAME, "下一页")
+	menu_display(id, menuid)
+}
+
+
+public mainmenuhandle(id, menuid, key)
+{
+	menu_destroy(menuid)
+	if(key<0)
+		return
+
+	switch(key){
+		case 0: client_cmd(id, "say /wp")
+	}
 }

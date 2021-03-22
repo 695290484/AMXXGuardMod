@@ -8,6 +8,12 @@ enum MONSTER_DATA{
 	md_speedmodify		// 速度修改(float) 默认0.0 [大于0则 速度*=值]
 }
 
+enum MISSION_TRIGGER{
+	mt_PrincessShowUp,	// 公主出现时(公主实体id)
+	mt_ChangeLevel,		// 难度切换时(当前难度)
+	mt_MissionOver		// 任务结束时(0平局1失败2成功)
+}
+
 /* 设置怪物特殊属性(已封装好) */
 stock GetMD_int(ent, md) return get_pdata_int(ent, md)
 stock Float:GetMD_float(ent, md) return get_pdata_float(ent, md)

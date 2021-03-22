@@ -2,7 +2,7 @@
 /* 全局 */
 new g_fwDummyResult, g_fwPostKilled, g_fwPreThink, g_fwPostThink, g_fwPreTraceAttack, g_fwPostTraceAttack, g_fwPostCreate, g_fwPreTakeDamage, g_fwPostTakeDamage
 new g_fwJump, g_fwMove, g_fwAttack
-new g_fwRefresh
+new g_fwRefresh, g_fwMissionTrigger
 
 new  g_AllocString, g_msgScoreInfo
 
@@ -94,3 +94,5 @@ new gIsGameStarted, gRoundStart
 new Float:gPrincessCenter[3], Float:gMonsterCenter[3]
 
 new Float:CheckScore, Float:CheckMonster, Float:checkSeconds
+
+new Float:mTime[33], mCount[33], gMenuType[33]
