@@ -767,3 +767,76 @@ stock CheckHealthBar(ent){
 		}
 	}
 }
+
+stock fm_get_user_money(id){
+	return get_pdata_int(id, 115, 5)
+}
+
+stock fm_set_user_money(iPlayer, money, flag)
+{
+	set_pdata_int(iPlayer, 115, money, 5)
+	message_begin(MSG_ONE, get_user_msgid("Money"), {0,0,0}, iPlayer)
+	write_long(money)
+	write_byte(flag)
+	message_end()
+}
+
+stock Float:getVIPratio(id){
+	new Float:racebnf = 0.0
+	new flags = get_user_flags(id)
+	if(flags & ADMIN_LEVEL_C) return 1.0 + racebnf
+	else if(flags & ADMIN_LEVEL_B) return 0.7 + racebnf
+	else if(flags & ADMIN_LEVEL_A) return 0.5 + racebnf
+	return 0.0 + racebnf
+}
+
+stock e_register_cvar(name[], string[], flags = 0, Float:fvalue = 0.0)
+{
+	new cvar = register_cvar(name, string, flags, fvalue);
+
+	static path[96];
+	if(!path[0])
+	{
+		get_localinfo("amxx_configsdir", path, charsmax(path));
+		format(path, charsmax(path), "%s/%s", path, "rpg-guard.cfg");
+	}
+
+	new file, print = true;
+	static line[64];
+	if(!file_exists(path))
+	{
+		file = fopen(path, "wt");
+		if(!file)
+			return cvar;
+	}
+	else
+	{
+		file = fopen(path, "rt");
+		if(!file)
+			return cvar;
+
+		while(!feof(file))
+		{
+			fgets(file, line, charsmax(line));
+			if(line[0] == ';' || !line[0])
+				continue;
+
+			if(contain(line, string) > 0)
+			{
+				print = false;
+				break;
+			}
+		}
+		fclose(file);
+		file = fopen(path, "at");
+	}
+
+	if(print)
+	{
+		get_plugin(-1, line, charsmax(line));
+		fprintf(file, "%-32s ^"%s^" // ^"%s^"^n", name, string, line);
+	}
+
+	fclose(file);
+	return cvar;
+}

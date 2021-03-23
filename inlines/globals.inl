@@ -6,6 +6,8 @@ new g_fwRefresh, g_fwMissionTrigger
 
 new  g_AllocString, g_msgScoreInfo, g_msgStatusText
 
+new cvar_bodydelay
+
 #define MONSTER 112
 #define NONPLAYER 122
 
@@ -40,7 +42,7 @@ new gLastFlags[512]
 
 //const m_flVelocityModifier = 108 // 点实体没有喔
 
-#define DEBUG
+//#define DEBUG
 #if defined DEBUG
 new laser 
 #endif

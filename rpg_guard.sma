@@ -22,9 +22,6 @@
 #include "inlines/gamerules.inl"
 #include "inlines/events.inl"
 
-// 尸体消失时间
-#define BODY_DELAY 5.0
-
 public plugin_init()
 {
 	register_plugin("RPG-CS Guard Mod","1.0","zhiJiaN")
@@ -72,8 +69,11 @@ public plugin_init()
 
 	// 是否用csdm提供的复活点
 	// 0: 用地图出生点 1: 地图出生点+附近nav路点 2: 用csdm复活点 3:csdm+附近nav路点
-	spawn_use_csdm = register_cvar("rg_spawn_use_csdm", "1")
+	spawn_use_csdm = e_register_cvar("rg_spawn_use_csdm", "1")
 	load_spawns()
+
+	// 怪物尸体延迟消失时间
+	cvar_bodydelay = e_register_cvar("rg_bodydelay", "5.0")
 
 	server_cmd("mp_round_infinite 1;mp_maxmoney 999999999;mp_respawn_immunitytime 3")
 	server_cmd("mp_infinite_ammo 2;mp_give_player_c4 0;mp_buy_anywhere 0")
@@ -234,6 +234,10 @@ public HAM_NpcKilled(iEntity, iAttacker, gib){
 		if(lv){
 			gUserScore[iAttacker] += lv
 			UpdateFrags(iAttacker, gUserScore[iAttacker], -1, 1)
+
+			new Float:fMoney, Float:fRatio = getVIPratio(iAttacker)
+			fMoney = fm_get_user_money(iAttacker) + (fRatio + 1.0) * lv * 2.0
+			fm_set_user_money(iAttacker, floatround(fMoney), 1)
 		}
 	}
 
@@ -258,7 +262,7 @@ public HAM_NpcThink(iEntity){
 
 	if(flag == DEAD_DYING){
 		set_pev(iEntity, pev_deadflag, DEAD_DEAD)
-		set_pev(iEntity, pev_nextthink, fCurTime + BODY_DELAY)
+		set_pev(iEntity, pev_nextthink, fCurTime + get_pcvar_float(cvar_bodydelay))
 		return HAM_IGNORED
 	}
 
