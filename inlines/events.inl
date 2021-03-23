@@ -26,11 +26,11 @@ public fw_StartFrame_Post(){
 	if(fCurTime-checkSeconds >= 1.0){
 		checkSeconds = fCurTime
 
-		//static tar, body, monstername[32],Float:hp,Float:maxhp
+		static tar, body, monstername[32],Float:hp,Float:maxhp
 		static team, Float:respawn
 		for(new id = 1; id<=gMaxPlayers; ++id){
 			team = get_user_team(id)
-/*			
+			
 			// 指向目标显示信息
 			if(is_user_alive(id)){
 				get_user_aiming(id,tar,body)
@@ -38,6 +38,10 @@ public fw_StartFrame_Post(){
 					pev(tar, pev_targetname, monstername, 31)
 					pev(tar,pev_health,hp)
 					pev(tar,pev_max_health,maxhp)
+
+					client_center(id, "%s  Lv%d HP:%.1f％", monstername, pev(tar, PEV_BOSSLEVEL), hp/maxhp*100.0)
+
+					/*
 					set_hudmessage(255,99,71, -1.0, 0.75, 0, 0.0, 1.1, 0.0, 0.0, HUD_SHOWINFO)
 					show_hudmessage(id, "%s  Lv:%d HP:%.1f％", monstername, pev(tar, PEV_BOSSLEVEL), hp/maxhp*100.0)
 
@@ -47,9 +51,12 @@ public fw_StartFrame_Post(){
 							show_hudmessage(ob, "%s  Lv:%d HP:%.1f％", monstername, pev(tar, PEV_BOSSLEVEL), hp/maxhp*100.0)
 						}
 					}
+					*/
+				}else{
+					client_center(id, "")
 				}
 			}
-*/
+
 
 			if(is_user_alive(id)){
 				set_hudmessage(0, 200, 200, 0.01, 0.94, 0, 0.0, 2.0, 0.0, 0.0, HUD_SHOWINFO)
@@ -184,13 +191,28 @@ public msgTeamInfo(iMsgID, iDest, iReceiver){
 
 public HAM_HostageKilled_post(iEntity, inflictor, attacker, Float:damage, damagetype){
 	if(!pev_valid(iEntity)) return HAM_IGNORED
-	
+
 	if(pev(iEntity, pev_deadflag) != DEAD_NO){
 		set_hudmessage(120,54,54, 0.02, 0.62, 1, 0.0, 5.5, 0.2, 0.2, HUD_GAMEMSG)
 		show_hudmessage(0, "任务失败: 公主已经被杀害...")
 
+		new hb = GetMD_int(iEntity, md_healthbar)
+		if(pev_valid(hb)){
+			set_pev(hb, pev_flags, FL_KILLME)
+			SetMD_int(iEntity, md_healthbar, 0)
+		}
+
 		server_cmd("endround T")
 		ExecuteForward(g_fwMissionTrigger, g_fwDummyResult, mt_MissionOver, 1)
+	}else{
+		new hb = GetMD_int(iEntity, md_healthbar)
+		if(pev_valid(hb)){
+			static Float:hp,Float:maxhp
+			pev(iEntity, pev_health, hp)
+			pev(iEntity, pev_max_health, maxhp)
+			if(maxhp < hp) set_pev(hb, pev_frame, 99.0)
+			else set_pev(hb, pev_frame, 0.0 + (((hp - 1.0) * 100.0) / maxhp))
+		}
 	}
 
 	return HAM_IGNORED
@@ -260,3 +282,42 @@ public mainmenuhandle(id, menuid, key)
 		case 0: client_cmd(id, "say /wp")
 	}
 }
+
+public fw_AddToFullPack_post(es, e, user, host, host_flags, player, p_set){
+	if(!pev_valid(user))
+		return FMRES_IGNORED
+
+	static monster
+	monster = pev(user, PEV_MONSTER)
+	if(monster != MONSTER && monster != NONPLAYER)
+		return FMRES_IGNORED
+
+	static hb
+	hb = GetMD_int(user, md_healthbar)
+	if(!hb || !pev_valid(hb))
+		return FMRES_IGNORED
+
+	if(pev(hb, pev_effects) & EF_NODRAW)
+		return FMRES_IGNORED
+
+	static Float:Origin[3]
+	pev(user, pev_origin, Origin)				
+	Origin[2] += pev(hb, pev_iuser4)	
+	engfunc(EngFunc_SetOrigin, hb, Origin)
+
+	return FMRES_HANDLED
+}
+
+public fw_PlayerTraceAttack(victim, attacker, Float:damage, Float:direction[3], tracehandle, damagetype){
+	if(attacker>0 && attacker<gMaxPlayers && attacker != victim)
+		return HAM_SUPERCEDE
+
+	return HAM_IGNORED
+}
+
+public fw_PlayerTakeDamage(victim, inflictor, attacker, Float:damage, damagetype){
+	if(attacker>0 && attacker<gMaxPlayers && attacker != victim)
+		return HAM_SUPERCEDE
+
+	return HAM_IGNORED
+}	

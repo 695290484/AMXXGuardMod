@@ -5,7 +5,8 @@ const m_flVelocityModifier = 10	// 借用一下假装m_flVelocityModifier a.a
 enum MONSTER_DATA{
 	md_attackradius = 11,	// 普通攻击范围(float) 默认80.0
 	md_jumppower,		// 跳跃力度(float) 默认350.0 [越高检测高度越高]
-	md_speedmodify		// 速度修改(float) 默认0.0 [大于0则 速度*=值]
+	md_speedmodify,		// 速度修改(float) 默认0.0 [大于0则 速度*=值]
+	md_healthbar		// 显示血条(int) 默认0 [1为开启,运行时值变血条实体id] 血条pev_iuser4表示z坐标偏移
 }
 
 enum MISSION_TRIGGER{

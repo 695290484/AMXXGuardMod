@@ -31,6 +31,8 @@ public plugin_init()
 
 	register_forward(FM_StartFrame, "fw_StartFrame_Post", 1)
 	RegisterHam(Ham_Killed, "player", "fw_PlayerKilled")
+	RegisterHam(Ham_TraceAttack, "player", "fw_PlayerTraceAttack")
+	RegisterHam(Ham_TakeDamage, "player", "fw_PlayerTakeDamage")
 
 	// 和原版不同
 	g_fwPostKilled = CreateMultiForward("rpg_fw_npckilled_post", ET_IGNORE, FP_CELL, FP_CELL, FP_CELL)
@@ -52,6 +54,7 @@ public plugin_init()
 
 	g_AllocString = engfunc(EngFunc_AllocString, "info_target")
 	g_msgScoreInfo = get_user_msgid("ScoreInfo")
+	g_msgStatusText = get_user_msgid("StatusText")
 
 	register_message(get_user_msgid("TeamInfo"), "msgTeamInfo")
 
@@ -72,7 +75,7 @@ public plugin_init()
 	spawn_use_csdm = register_cvar("rg_spawn_use_csdm", "1")
 	load_spawns()
 
-	server_cmd("mp_round_infinite 1;mp_maxmoney 999999999")
+	server_cmd("mp_round_infinite 1;mp_maxmoney 999999999;mp_respawn_immunitytime 3")
 	server_cmd("mp_infinite_ammo 2;mp_give_player_c4 0;mp_buy_anywhere 0")
 	server_cmd("mp_autoteambalance 0")
 
@@ -87,12 +90,15 @@ public plugin_init()
 	register_event("HLTV", "EventHLTV", "a", "1=0", "2=0")
 
 	register_forward(FM_ChangeLevel, "fw_FMChangeLevel")
-
+	register_forward(FM_AddToFullPack, "fw_AddToFullPack_post", 1)
 	RegisterHam(Ham_TakeDamage, "hostage_entity", "HAM_HostageKilled_post", 1)
 
 	server_cmd("endround 0")
 
 	register_clcmd("chooseteam", "clcmd_changeteam")
+	register_clcmd ("unstuck" , "ClientCommand_UnStick")
+	register_clcmd ("say unstuck" , "ClientCommand_UnStick")
+	register_clcmd ("say /unstuck" , "ClientCommand_UnStick")
 }
 
 public plugin_precache(){
@@ -103,10 +109,17 @@ public plugin_precache(){
 	spr_blood_drop = engfunc(EngFunc_PrecacheModel, "sprites/blood.spr")
 	gFwdSpawn = register_forward(FM_Spawn, "fw_Spawn")
 
+	engfunc(EngFunc_PrecacheModel, "sprites/rpg/healthbar.spr")
 	if(!gDoNotCreatePrincess){
 		gPrincess = engfunc(EngFunc_CreateNamedEntity, engfunc(EngFunc_AllocString, "hostage_entity"))
-		if(pev_valid(gPrincess))
+		if(pev_valid(gPrincess)){
 			DispatchSpawn(gPrincess)
+			SetMD_int(gPrincess, md_healthbar, 1)
+			CheckHealthBar(gPrincess)
+			new hb = GetMD_int(gPrincess, md_healthbar)
+			if(hb && pev_valid(hb))
+				set_pev(hb, pev_effects, pev(hb, pev_effects) | EF_NODRAW)
+		}
 	}
 }
 
@@ -188,11 +201,13 @@ create_monster(Float:origin[3], Float:angles[3], iMonsterlevel, szClass[], szNam
 		gMonsterEntCounter++
 		setMonsterRandomEnemy(iEntity)
 		ExecuteForward(g_fwPostCreate, g_fwDummyResult, iEntity)
+		CheckHealthBar(iEntity)
 		return  iEntity
 	}else{
 		if(fw_afterCreate(iEntity, origin, (floatabs(fMinsize[2]) + 5.0))){
 			setMonsterRandomEnemy(iEntity)
 			ExecuteForward(g_fwPostCreate, g_fwDummyResult, iEntity)
+			CheckHealthBar(iEntity)
 			return iEntity
 		}
 	}
@@ -220,6 +235,12 @@ public HAM_NpcKilled(iEntity, iAttacker, gib){
 			gUserScore[iAttacker] += lv
 			UpdateFrags(iAttacker, gUserScore[iAttacker], -1, 1)
 		}
+	}
+
+	new hb = GetMD_int(iEntity, md_healthbar)
+	if(pev_valid(hb)){
+		set_pev(hb, pev_flags, FL_KILLME)
+		SetMD_int(iEntity, md_healthbar, 0)
 	}
 
 	ExecuteForward(g_fwPostKilled, g_fwDummyResult, iEntity, iAttacker, gLastHeadshot[iEntity])

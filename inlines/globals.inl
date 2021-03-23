@@ -4,7 +4,7 @@ new g_fwDummyResult, g_fwPostKilled, g_fwPreThink, g_fwPostThink, g_fwPreTraceAt
 new g_fwJump, g_fwMove, g_fwAttack
 new g_fwRefresh, g_fwMissionTrigger
 
-new  g_AllocString, g_msgScoreInfo
+new  g_AllocString, g_msgScoreInfo, g_msgStatusText
 
 #define MONSTER 112
 #define NONPLAYER 122

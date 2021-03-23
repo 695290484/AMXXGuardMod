@@ -90,9 +90,19 @@ resetPrincess(hostage, Float:origin[3]){
 	set_pev(hostage, pev_targetname, "公主")
 	set_pev(hostage, PEV_MONSTER, NONPLAYER)
 	engfunc(EngFunc_SetOrigin, hostage, origin)
+
+	new hb = GetMD_int(hostage, md_healthbar)
+	if(hb && pev_valid(hb)){
+		set_pev(hb, pev_effects, pev(hb, pev_effects) & ~EF_NODRAW)
+		set_pev(hb, pev_frame, 99.0)
+	}
 }
 
 hidePrincess(hostage){
+	new hb = GetMD_int(hostage, md_healthbar)
+	if(hb && pev_valid(hb))
+		set_pev(hb, pev_effects, pev(hb, pev_effects) | EF_NODRAW)
+
 	set_pev(hostage, pev_solid, SOLID_NOT)
 	set_pev(hostage, pev_takedamage, DAMAGE_NO)
 	set_pev(hostage, pev_effects, EF_NODRAW)

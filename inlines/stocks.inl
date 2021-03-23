@@ -677,6 +677,12 @@ stock showMonstersHP(attacker, ent){
 		set_hudmessage(color[0], color[1], color[2], 0.1, 0.10, 0, 0.0, 4.7, 0.0, 0.3, HUD_MONSTER)
 		show_hudmessage(id, TempText)
 	}
+
+	new hb = GetMD_int(ent, md_healthbar)
+	if(hb && pev_valid(hb)){
+		if(MaxHp < Hp) set_pev(hb, pev_frame, 99.0)
+		else set_pev(hb, pev_frame, 0.0 + (((Hp - 1.0) * 100.0) / MaxHp))
+	}
 }
 
 stock client_color(const id, const input[], any:...)
@@ -689,6 +695,16 @@ stock client_color(const id, const input[], any:...)
 	replace_all(msg, 190, "/w", "^0")
 	message_begin(id ? MSG_ONE : MSG_BROADCAST, get_user_msgid( "SayText" ), _, id)
 	write_byte(1)
+	write_string(msg)
+	message_end()
+}
+
+stock client_center(const id, const input[], any:...)
+{
+	new msg[129]
+	vformat(msg, charsmax(msg), input, 3)
+	message_begin(MSG_ONE, g_msgStatusText, {0, 0, 0}, id)
+	write_byte(0)
 	write_string(msg)
 	message_end()
 }
@@ -733,4 +749,21 @@ stock setMonsterRandomEnemy(ent){
 		set_pev(ent, pev_enemy, rndPlayer?(random_num(0,1)?rndPlayer:gPrincess):gPrincess)
 	else
 		set_pev(ent, pev_enemy, rndPlayer)
+}
+
+stock CheckHealthBar(ent){
+	if(GetMD_int(ent, md_healthbar) == 1){
+		new hb = engfunc(EngFunc_CreateNamedEntity, engfunc(EngFunc_AllocString, "env_sprite"))
+		if(pev_valid(hb)){
+			set_pev(hb, pev_scale, 0.15)
+			engfunc(EngFunc_SetModel, hb, "sprites/rpg/healthbar.spr")
+			SetMD_int(ent, md_healthbar, hb)
+			set_pev(hb, pev_iuser4, 75)
+			set_pev(hb, pev_frame, 99.0)
+			new Float:Origin[3]
+			pev(ent, pev_origin, Origin)
+			Origin[2] += 75.0
+			engfunc(EngFunc_SetOrigin, hb, Origin)
+		}
+	}
 }
