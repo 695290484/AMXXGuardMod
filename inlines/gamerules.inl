@@ -46,6 +46,9 @@ updateLevel(){
 		gRoundStart = 0
 		ExecuteForward(g_fwMissionTrigger, g_fwDummyResult, mt_MissionOver, 2)
 	}else if(lastLevel != gCurLevel){
+		set_hudmessage(120,54,54, 0.02, 0.62, 1, 0.0, 6.5,0.1, 0.1, HUD_GAMEMSG)
+		show_hudmessage(0, "%s", gLevelName[gCurLevel])
+
 		CheckMonster = get_gametime() + 15.0 // 切换难度的时候,给一定时间反应
 		ExecuteForward(g_fwMissionTrigger, g_fwDummyResult, mt_ChangeLevel, gCurLevel)
 	}

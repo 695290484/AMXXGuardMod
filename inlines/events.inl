@@ -15,6 +15,9 @@ public fw_StartFrame_Post(){
 			set_hudmessage(120,54,54, 0.02, 0.62, 1, 0.0, 6.5,0.1, 0.1, HUD_GAMEMSG)
 			show_hudmessage(0, "警告: 20秒后魔王的军队将抵达战场!")
 			CheckMonster = fCurTime + 20.0
+
+			remove_task(TASK8)
+			set_task(9.5, "task_showfirstlevelname", TASK8)
 		}
 	}
 

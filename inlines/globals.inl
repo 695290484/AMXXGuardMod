@@ -26,6 +26,7 @@ new cvar_bodydelay, cvar_gameseconds
 #define TASK5 5000
 #define TASK6 6000
 #define TASK7 7000
+#define TASK8 8000
 
 new gMaxPlayers
 

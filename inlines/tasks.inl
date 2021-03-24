@@ -188,3 +188,8 @@ public task_resetround(){
 	server_cmd("endround T")
 	ExecuteForward(g_fwMissionTrigger, g_fwDummyResult, mt_MissionOver, 0)
 }
+
+public task_showfirstlevelname(){
+	set_hudmessage(120,54,54, 0.02, 0.62, 1, 0.0, 6.5,0.1, 0.1, HUD_GAMEMSG)
+	show_hudmessage(0, "%s", gLevelName[1])
+}
