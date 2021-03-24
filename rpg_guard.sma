@@ -48,6 +48,7 @@ public plugin_init()
 
 	g_fwRefresh =  CreateMultiForward("rpg_fw_npc_refresh", ET_CONTINUE, FP_CELL, FP_CELL)
 	g_fwMissionTrigger =  CreateMultiForward("rpg_fw_mission_tigger", ET_IGNORE, FP_CELL, FP_CELL)
+	g_fwDarkLevelChange = CreateMultiForward("rpg_fw_dark_change", ET_IGNORE, FP_CELL)
 
 	g_AllocString = engfunc(EngFunc_AllocString, "info_target")
 	g_msgScoreInfo = get_user_msgid("ScoreInfo")
@@ -74,6 +75,9 @@ public plugin_init()
 
 	// 怪物尸体延迟消失时间
 	cvar_bodydelay = e_register_cvar("rg_bodydelay", "5.0")
+
+	// 暗度成长速度
+	cvar_gameseconds = e_register_cvar("rg_darkrate", "75")
 
 	server_cmd("mp_round_infinite 1;mp_maxmoney 999999999;mp_respawn_immunitytime 3")
 	server_cmd("mp_infinite_ammo 2;mp_give_player_c4 0;mp_buy_anywhere 0")
@@ -121,6 +125,10 @@ public plugin_precache(){
 				set_pev(hb, pev_effects, pev(hb, pev_effects) | EF_NODRAW)
 		}
 	}
+
+	server_cmd("sv_skycolor_r 0")
+	server_cmd("sv_skycolor_g 0")
+	server_cmd("sv_skycolor_b 0")
 }
 
 public plugin_natives(){
@@ -134,6 +142,7 @@ public plugin_natives(){
 	register_native("rpg_set_user_extradamage", "_native_set_user_extradamage")
 	register_native("rpg_get_user_extradamage", "_native_get_user_extradamage", 1)
 	register_native("rpg_get_princess", "_native_get_princess", 1)
+	register_native("rpg_get_darklevel", "_native_get_darklevel", 1)
 
 	register_native("rpg_set_princessArea", "_native_set_princessArea")
 	register_native("rpg_set_monsterArea", "_native_set_monsterArea")

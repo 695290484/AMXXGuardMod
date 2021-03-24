@@ -46,6 +46,7 @@ updateLevel(){
 		gRoundStart = 0
 		ExecuteForward(g_fwMissionTrigger, g_fwDummyResult, mt_MissionOver, 2)
 	}else if(lastLevel != gCurLevel){
+		CheckMonster = get_gametime() + 15.0 // 切换难度的时候,给一定时间反应
 		ExecuteForward(g_fwMissionTrigger, g_fwDummyResult, mt_ChangeLevel, gCurLevel)
 	}
 }

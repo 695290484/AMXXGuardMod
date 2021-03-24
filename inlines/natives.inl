@@ -181,3 +181,7 @@ public _native_set_monsterArea(iPlugin,iParams){
 	
 	get_array_f(1, gMonsterCenter, 3)
 }
+
+public _native_get_darklevel(){
+	return gCurrentDarkLevel
+}

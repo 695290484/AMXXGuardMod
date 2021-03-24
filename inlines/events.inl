@@ -18,8 +18,15 @@ public fw_StartFrame_Post(){
 		}
 	}
 
-	if(CheckMonster && fCurTime-CheckMonster >= 0.1){ 
-		CheckMonster = fCurTime
+	if(CheckMonster && fCurTime-CheckMonster >= 0.1){
+		// 随着亮度改变 产生的速度变化
+		switch(gCurrentDarkLevel){
+			case 0: CheckMonster = fCurTime + random_float(2.0, 3.0)
+			case 1: CheckMonster = fCurTime + random_float(1.5, 2.0)
+			case 2: CheckMonster = fCurTime + random_float(1.0, 1.5)
+			case 3: CheckMonster = fCurTime + random_float(0.5, 1.0)
+			case 4: CheckMonster = fCurTime
+		}
 		ExecuteForward(g_fwRefresh, g_fwDummyResult, gCurLevel, gMaxMonster-gMonsterEntCounter)
 	}
 
@@ -40,7 +47,7 @@ public fw_StartFrame_Post(){
 					pev(tar,pev_max_health,maxhp)
 
 					client_center(id, "%s  Lv%d HP:%.1f％", monstername, pev(tar, PEV_BOSSLEVEL), hp/maxhp*100.0)
-
+					gLastCenterMsg[id] = 1
 					/*
 					set_hudmessage(255,99,71, -1.0, 0.75, 0, 0.0, 1.1, 0.0, 0.0, HUD_SHOWINFO)
 					show_hudmessage(id, "%s  Lv:%d HP:%.1f％", monstername, pev(tar, PEV_BOSSLEVEL), hp/maxhp*100.0)
@@ -52,7 +59,8 @@ public fw_StartFrame_Post(){
 						}
 					}
 					*/
-				}else{
+				}else if(gLastCenterMsg[id]){
+					gLastCenterMsg[id] = 0
 					client_center(id, "")
 				}
 			}
@@ -91,6 +99,25 @@ public fw_StartFrame_Post(){
 			}
 		}
 
+		// b c d e f g h i j k l m
+		// 12个亮度拆分成5段
+		gCurrentDayTime += get_pcvar_num(cvar_gameseconds)
+		new dark = gCurrentDayTime / 14400 // 3600 * 4
+		if(dark >= 5){
+			gCurrentDayTime = 0
+		}
+		if(dark != gCurrentDarkLevel){
+			switch(dark){
+				case 0: engfunc(EngFunc_LightStyle, 0, "m")
+				case 1: engfunc(EngFunc_LightStyle, 0, "h")
+				case 2: engfunc(EngFunc_LightStyle, 0, "f")
+				case 3: engfunc(EngFunc_LightStyle, 0, "d")
+				case 4: engfunc(EngFunc_LightStyle, 0, "b")
+			}
+
+			gCurrentDarkLevel = dark
+			ExecuteForward(g_fwDarkLevelChange, g_fwDummyResult, gCurrentDarkLevel)
+		}
 
 	}
 }
@@ -177,6 +204,10 @@ public EventHLTV(){
 		client_putinserver(id)
 
 	remove_all_npc()
+
+	engfunc(EngFunc_LightStyle, 0, "m")
+	gCurrentDayTime = 0
+	gCurrentDarkLevel = 0
 }
 
 public msgTeamInfo(iMsgID, iDest, iReceiver){

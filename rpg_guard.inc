@@ -26,7 +26,7 @@ stock SetMD_float(ent, md, Float:value) set_pdata_float(ent, md, value)
 native rpg_create_g(Float:origin[3], Float:angles[3], iMonsterlevel, szClass[], szName[], Float:fHealth,  Float:fMinsize[3], Float:fMaxsize[3], iModelID) // 创建怪物
 native rpg_delaydmg_g(ent, Float:damage, Float:delay, Float:distance, dmgType, f2f=1) // 延迟伤害(f2f的1表示正面,-1表示背面,0无要求)
 native rpg_get_princess() // 获得公主的实体id
-
+native rpg_get_darklevel() // 获得当前暗度等级
 
 /**
  * 动作相关(自动使用移速来计算walk和run动作播放的速度)
@@ -61,10 +61,6 @@ native rpg_set_monsterArea(Float:origin[3])
 /**
  * 各种事件
  */
-forward rpg_fw_npc_jump(ent)
-forward rpg_fw_npc_move(ent)
-forward rpg_fw_npc_attack(ent, target)
-forward rpg_fw_npc_refresh(level, numleft)
 forward rpg_fw_npckilled_post(ent, killer, headshot)
 forward rpg_fw_npctakedamage_post(iEntity, attacker, Float:damage, damagetype, headshot)
 forward rpg_fw_npccreate_post(ent)
@@ -72,5 +68,20 @@ forward rpg_fw_npcthink_pre(ent)
 forward rpg_fw_npcthink_post(ent)
 forward rpg_fw_npctraceattack_pre(iEntity, attacker, damage, damagetype, HitGroup)
 forward rpg_fw_npctraceattack_post(iEntity, attacker, damage, damagetype, HitGroup)
+
+forward rpg_fw_npc_jump(ent)
+forward rpg_fw_npc_move(ent)
+forward rpg_fw_npc_attack(ent, target)
+forward rpg_fw_npc_refresh(level, numleft) // 怪物刷新(难度等级,剩下可刷的数目)
+forward rpg_fw_mission_tigger(MISSION_TRIGGER:mt, data) // 任务节点触发时
+forward rpg_fw_dark_change(darkLevel) // 亮度改变时(0-4 越大越暗)
+
+stock isEntByClass(ent, const classname[]){
+	new class[32]
+	pev(ent, pev_classname, class, charsmax(class))
+	if(!strcmp(class, classname))
+		return 1
+	return 0
+}
 
 #endif
