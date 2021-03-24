@@ -224,7 +224,12 @@ public HAM_NpcKilled(iEntity, iAttacker, gib){
 	set_pev(iEntity, pev_takedamage, DAMAGE_NO)
 	set_pev(iEntity, pev_solid, SOLID_NOT)
 	set_pev(iEntity, pev_nextthink, get_gametime()+ 0.02)
-	task_checkdeadbody(iEntity + TASK1)
+
+	if(pev(iEntity, pev_flags) & FL_ONGROUND){
+		set_pev(iEntity, pev_movetype, MOVETYPE_NONE)
+	}else{
+		task_checkdeadbody(iEntity + TASK1)
+	}
 
 	remove_task(iEntity + TASK2)
 	remove_task(iEntity + TASK5)
@@ -246,6 +251,8 @@ public HAM_NpcKilled(iEntity, iAttacker, gib){
 		set_pev(hb, pev_flags, FL_KILLME)
 		SetMD_int(iEntity, md_healthbar, 0)
 	}
+
+	gAnimInterrupt[iEntity] = 0.0
 
 	ExecuteForward(g_fwPostKilled, g_fwDummyResult, iEntity, iAttacker, gLastHeadshot[iEntity])
 	return HAM_SUPERCEDE

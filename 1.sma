@@ -45,12 +45,15 @@ public rpg_fw_npckilled_post(ent, killer, headshot){
 
 public rpg_fw_npctakedamage_post(iEntity, attacker, Float:damage, damagetype, headshot){
 	if(pev(iEntity, pev_deadflag) == DEAD_NO){
-		if(headshot)
-			rpg_animation_g(iEntity, 1, _, _, 1)
-		else
-			rpg_animation_g(iEntity, 0, _, _, 1)
+		new curAnim = pev(iEntity, pev_sequence)
+		if(curAnim != 22 && curAnim != 23){ // 不在攻击的时候才播放受伤动画
+			if(headshot)
+				rpg_animation_g(iEntity, 1, _, _, 1)
+			else
+				rpg_animation_g(iEntity, 0, _, _, 1)
 
-		rpg_set_animinterrupt_g(iEntity, get_gametime() + 0.07)
+			rpg_set_animinterrupt_g(iEntity, get_gametime() + 0.02)
+		}
 	}
 }
 

@@ -39,9 +39,11 @@ updateLevel(){
 	if(gCurLevel > gMaxLevel){
 		set_hudmessage(120,54,54, 0.02, 0.62, 1, 0.0, 5.5, 0.2, 0.2, HUD_GAMEMSG)
 		show_hudmessage(0, "任务完成,魔王的军队逃走了...")
-
+		set_all_monster_death()
+		
 		CheckMonster = get_gametime() + 9999.0
 		server_cmd("endround CT")
+		gRoundStart = 0
 		ExecuteForward(g_fwMissionTrigger, g_fwDummyResult, mt_MissionOver, 2)
 	}else if(lastLevel != gCurLevel){
 		ExecuteForward(g_fwMissionTrigger, g_fwDummyResult, mt_ChangeLevel, gCurLevel)

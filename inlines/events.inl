@@ -203,6 +203,7 @@ public HAM_HostageKilled_post(iEntity, inflictor, attacker, Float:damage, damage
 		}
 
 		server_cmd("endround T")
+		gRoundStart = 0
 		ExecuteForward(g_fwMissionTrigger, g_fwDummyResult, mt_MissionOver, 1)
 	}else{
 		new hb = GetMD_int(iEntity, md_healthbar)

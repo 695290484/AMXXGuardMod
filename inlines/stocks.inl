@@ -743,6 +743,14 @@ stock remove_all_enemy(){
 	}
 }
 
+stock set_all_monster_death(){
+	for(new ent = gMaxPlayers+1; ent < 512; ++ent){
+		if(IsMonster(ent))
+			set_pev(ent, pev_deadflag, DEAD_DYING)
+	}
+}
+
+
 stock setMonsterRandomEnemy(ent){
 	new rndPlayer = findRandomEnemy()
 	if(!gDoNotCreatePrincess)
