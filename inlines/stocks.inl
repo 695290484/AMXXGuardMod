@@ -745,8 +745,21 @@ stock remove_all_enemy(){
 
 stock set_all_monster_death(){
 	for(new ent = gMaxPlayers+1; ent < 512; ++ent){
-		if(IsMonster(ent))
+		if(IsMonster(ent)){
 			set_pev(ent, pev_deadflag, DEAD_DYING)
+			set_pev(ent, pev_takedamage, DAMAGE_NO)
+			set_pev(ent, pev_solid, SOLID_NOT)
+			set_pev(ent, pev_nextthink, get_gametime()+ 0.02)
+
+			if(pev(ent, pev_flags) & FL_ONGROUND){
+				set_pev(ent, pev_movetype, MOVETYPE_NONE)
+			}else{
+				task_checkdeadbody(ent + TASK1)
+			}
+
+			remove_task(ent + TASK2)
+			remove_task(ent + TASK5)
+		}
 	}
 }
 
@@ -847,4 +860,44 @@ stock e_register_cvar(name[], string[], flags = 0, Float:fvalue = 0.0)
 
 	fclose(file);
 	return cvar;
+}
+
+stock float_weapon(ent)
+{
+	if(pev_valid(ent))
+	{
+		if(is_item_onground(ent) == 1.0){
+			new Float:color[3]
+			set_pev(ent,pev_renderfx,kRenderFxGlowShell)
+			new Float:amt = 45.0
+			set_pev(ent, pev_renderamt, amt)
+			color[0] = 255.0
+			color[1] = 255.0
+			color[2] = 255.0
+			set_pev(ent,pev_rendercolor,color)
+			set_pev(ent,pev_velocity,Float:{0.0,0.0,0.0})
+			set_pev(ent,pev_movetype,MOVETYPE_NOCLIP)
+		}else{
+			new Float:v[3]
+			pev(ent, pev_velocity, v)
+			xs_vec_mul_scalar(v, -0.2, v)
+			set_pev(ent,pev_velocity,v)
+			set_pev(ent, pev_nextthink, get_gametime()+1.0)
+		}
+	}
+}
+
+stock Float:is_item_onground(id)
+{
+	new Float:vOrigin[3], Float:fDist
+	pev(id, pev_origin, vOrigin)
+	fDist = vOrigin[2]
+	
+	while(engfunc(EngFunc_PointContents, vOrigin) == CONTENTS_EMPTY && vOrigin[2]>-9999.0)
+		vOrigin[2] -= 1.0
+	
+	if(engfunc(EngFunc_PointContents, vOrigin) == CONTENTS_SOLID)
+		return fDist - vOrigin[2]
+	
+	return 0.0
 }

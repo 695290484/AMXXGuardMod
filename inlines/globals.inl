@@ -6,7 +6,7 @@ new g_fwRefresh, g_fwMissionTrigger, g_fwDarkLevelChange
 
 new  g_AllocString, g_msgScoreInfo, g_msgStatusText
 
-new cvar_bodydelay, cvar_gameseconds
+new cvar_bodydelay, cvar_gameseconds, cvar_removeweapon
 
 #define MONSTER 112
 #define NONPLAYER 122

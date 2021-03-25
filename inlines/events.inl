@@ -152,6 +152,7 @@ public client_disconnect(id){
 		set_task(3.0, "task_resetround", TASK7)
 		gIsGameStarted = 0
 	}
+	gUserScore[id] = 0
 }
 
 public plugin_end(){
@@ -211,6 +212,8 @@ public EventHLTV(){
 	engfunc(EngFunc_LightStyle, 0, "m")
 	gCurrentDayTime = 0
 	gCurrentDarkLevel = 0
+
+	gCurLevel = 0
 }
 
 public msgTeamInfo(iMsgID, iDest, iReceiver){
@@ -356,3 +359,26 @@ public fw_PlayerTakeDamage(victim, inflictor, attacker, Float:damage, damagetype
 
 	return HAM_IGNORED
 }	
+
+public fw_SetModel(entity, const model[])
+{
+	if (strlen(model) < 8)
+		return;
+
+	static classname[10]
+	pev(entity, pev_classname, classname, charsmax(classname))
+		
+	if (equal(classname, "weaponbox")){
+		set_pev(entity, pev_nextthink, get_gametime() + get_pcvar_float(cvar_removeweapon))
+	}
+}
+
+public touch_weapon(weaponbox,worldspawn)
+{
+	if(pev_valid(weaponbox))
+	{
+		float_weapon(weaponbox)
+		set_task(0.1, "task_spinweapon", weaponbox)
+	}
+}
+

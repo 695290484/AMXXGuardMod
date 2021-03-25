@@ -193,3 +193,13 @@ public task_showfirstlevelname(){
 	set_hudmessage(120,54,54, 0.02, 0.62, 1, 0.0, 6.5,0.1, 0.1, HUD_GAMEMSG)
 	show_hudmessage(0, "%s", gLevelName[1])
 }
+
+public task_spinweapon(ent)
+{
+	if(pev_valid(ent))
+	{
+		static Float:floatvector[3]
+		floatvector[1] = 60.0
+		set_pev(ent,pev_avelocity,floatvector)
+	}
+}
