@@ -131,6 +131,8 @@ public fw_PlayerKilled(victim, iAttacker, shouldgib){
 
 	gUserLastDeath[victim] = get_gametime()
 	gUserRespawnCD[victim] = floatmin(10.0, gUserRespawnCD[victim] + 3.0)
+
+	CancleBuilding(victim)
 }
 
 public client_putinserver(id){
@@ -140,6 +142,8 @@ public client_putinserver(id){
 	gUserTargetMonster[id] = 0
 	gUserLastAttack[id] = 0.0
 	gMenuType[id] = 0
+	gIsBuilding[id] = 0
+	gRotation[id] = 0
 
 	remove_task(TASK6)
 	set_task(3.0, "task_checkplayercount", TASK6, _, _, "b")
@@ -153,6 +157,8 @@ public client_disconnect(id){
 		gIsGameStarted = 0
 	}
 	gUserScore[id] = 0
+
+	CancleBuilding(id)
 }
 
 public plugin_end(){
@@ -300,8 +306,8 @@ rpg_mainmenu(id){
 	new menuid, menu[256]
 	formatex(menu, charsmax(menu), "\r#. \dRPG-Guard模式^n\dQ群:\r1080724568")
 	menuid = menu_create(menu, "mainmenuhandle")
-	formatex(menu, charsmax(menu), "\w 武器菜单")
-	menu_additem(menuid, menu)
+	menu_additem(menuid, "\w 武器")
+	menu_additem(menuid, "\w 建造")
 
 	menu_setprop(menuid, MPROP_EXITNAME, "退出")
 	menu_setprop(menuid, MPROP_BACKNAME, "后退")
@@ -318,6 +324,7 @@ public mainmenuhandle(id, menuid, key)
 
 	switch(key){
 		case 0: client_cmd(id, "say /wp")
+		case 1: buildMenu(id)
 	}
 }
 
@@ -382,3 +389,9 @@ public touch_weapon(weaponbox,worldspawn)
 	}
 }
 
+public fw_CmdStart(iPlayer, uc_handle, seed)
+{
+	if(!is_user_alive(iPlayer)) return
+
+	moveBuilding(iPlayer, uc_handle)
+}

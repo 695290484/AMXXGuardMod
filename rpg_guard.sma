@@ -22,6 +22,7 @@
 #include "inlines/gamerules.inl"
 #include "inlines/events.inl"
 #include "inlines/cvars.inl"
+#include "inlines/building.inl"
 
 public plugin_init()
 {
@@ -88,6 +89,11 @@ public plugin_init()
 	register_forward(FM_ChangeLevel, "fw_FMChangeLevel")
 	register_forward(FM_AddToFullPack, "fw_AddToFullPack_post", 1)
 	RegisterHam(Ham_TakeDamage, "hostage_entity", "HAM_HostageKilled_post", 1)
+
+	register_forward(FM_CmdStart, "fw_CmdStart")
+	RegisterHam(Ham_Weapon_PrimaryAttack, "weapon_knife", "HAM_Knife_PrimaryAttack_Post", 1)
+	RegisterHam(Ham_Weapon_SecondaryAttack, "weapon_knife", "HAM_Knife_SecondaryAttack_Post", 1)
+	RegisterHam(Ham_Item_Holster, "weapon_knife", "HAM_Knife_Holster_Post", 1)
 
 	server_cmd("endround 0")
 
@@ -310,6 +316,9 @@ public HAM_NpcThink(iEntity){
 
 // 攻击(不在这里修改伤害,除非和 攻击相关而且takedamage不好处理)
 public HAM_NpcTraceAttack(iEntity, attacker, Float:damage, Float:direction[3], tracehandle, damagetype){
+	if(IsNonPlayer(iEntity) && attacker && attacker<gMaxPlayers)
+		return HAM_SUPERCEDE // npc cant be hurt by player
+
 	if(!IsMonster(iEntity) || !IsMonsterAlive(iEntity))
 		return HAM_IGNORED
 
@@ -352,6 +361,9 @@ public HAM_NpcTraceAttack_post(iEntity, attacker, Float:damage, Float:direction[
 
 // 伤害(只负责修改伤害)
 public HAM_NpcTakeDamage(iEntity, inflictor, attacker, Float:damage, damagetype){
+	if(IsNonPlayer(iEntity) && attacker && attacker<gMaxPlayers)
+		return HAM_SUPERCEDE // npc cant be hurt by player
+
 	if(!is_user_connected(attacker))
 		return HAM_IGNORED
 

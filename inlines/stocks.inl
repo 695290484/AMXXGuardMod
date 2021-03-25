@@ -901,3 +901,79 @@ stock Float:is_item_onground(id)
 	
 	return 0.0
 }
+
+stock get_aim_origin_vector(iPlayer, Float:forw, Float:right, Float:up, Float:vStart[])
+{
+	new Float:vOrigin[3], Float:vAngle[3], Float:vForward[3], Float:vRight[3], Float:vUp[3]
+	
+	pev(iPlayer, pev_origin, vOrigin)
+	pev(iPlayer, pev_view_ofs, vUp)
+	xs_vec_add(vOrigin, vUp, vOrigin)
+	pev(iPlayer, pev_v_angle, vAngle)
+	
+	angle_vector(vAngle, ANGLEVECTOR_FORWARD, vForward)
+	angle_vector(vAngle, ANGLEVECTOR_RIGHT, vRight)
+	angle_vector(vAngle, ANGLEVECTOR_UP, vUp)
+	
+	vStart[0] = vOrigin[0] + vForward[0] * forw + vRight[0] * right + vUp[0] * up
+	vStart[1] = vOrigin[1] + vForward[1] * forw + vRight[1] * right + vUp[1] * up
+	vStart[2] = vOrigin[2] + vForward[2] * forw + vRight[2] * right + vUp[2] * up
+}
+
+stock GetPlayerCurrentWeapon(iPlayer)
+{
+	new iWeapon = get_pdata_cbase(iPlayer, 373)
+	if(iWeapon <= 0) return 0
+	return get_pdata_int(iWeapon, 43, 4)
+}
+
+
+stock bool:fm_floor_entity(index)
+{
+	new Float:start[3], Float:dest[3];
+	pev(index, pev_origin, start);
+	dest[0] = start[0];
+	dest[1] = start[1];
+	dest[2] = -8191.0;
+
+	engfunc(EngFunc_TraceLine, start, dest, DONT_IGNORE_MONSTERS, index, 0);
+	new iEntity = get_tr2(0, TR_pHit);
+	if(IsBuilding(iEntity) || IsTarget(iEntity))
+		return true;
+	
+	return false;
+}
+
+stock Float:fm_distance_to_floor(index, ignoremonsters = 1)
+{
+	new Float:start[3], Float:dest[3], Float:end[3];
+	pev(index, pev_origin, start);
+	dest[0] = start[0];
+	dest[1] = start[1];
+	dest[2] = -8191.0;
+
+	engfunc(EngFunc_TraceLine, start, dest, ignoremonsters, index, 0);
+	get_tr2(0, TR_vecEndPos, end);
+
+	pev(index, pev_absmin, start);
+	new Float:ret = start[2] - end[2];
+
+	return ret > 0 ? ret : 0.0;
+}
+
+stock CheckStuck(iEntity, Float:fMin[3], Float:fMax[3])
+{
+	new Float:testorigin[3]
+	pev(iEntity, pev_origin, testorigin)
+
+	new Float:Origin_F[3], Float:Origin_R[3], Float:Origin_L[3], Float:Origin_B[3]
+	xs_vec_copy(testorigin, Origin_L) ; xs_vec_copy(testorigin, Origin_F)
+	xs_vec_copy(testorigin, Origin_B) ; xs_vec_copy(testorigin, Origin_R)
+	Origin_F[0] += fMax[0] ; Origin_B[0] += fMin[0]
+	Origin_L[1] += fMax[1] ; Origin_R[1] += fMin[1]
+	if(engfunc(EngFunc_PointContents, Origin_F) != CONTENTS_EMPTY || engfunc(EngFunc_PointContents, Origin_R) != CONTENTS_EMPTY ||
+	engfunc(EngFunc_PointContents, Origin_L) != CONTENTS_EMPTY || engfunc(EngFunc_PointContents, Origin_B) != CONTENTS_EMPTY)
+		return 0
+
+	return 1
+}

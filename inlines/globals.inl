@@ -101,3 +101,15 @@ new Float:CheckScore, Float:CheckMonster, Float:checkSeconds
 new Float:mTime[33], mCount[33], gMenuType[33]
 
 new gLastCenterMsg[33], gCurrentDayTime, gCurrentDarkLevel
+
+/* building */
+new gIsBuilding[33], gRotation[33], gBuildingCount
+#define PEV_BUILDER pev_iuser1
+#define PEV_BUILDINGID pev_iuser4
+#define MAX_BUILDING 32
+new gBuildingName[MAX_BUILDING][32]
+new Float:gBuildingMins[MAX_BUILDING][3], Float:gBuildingMaxs[MAX_BUILDING][3]
+new Float:gBuildingHealth[MAX_BUILDING]
+new gBuildingModelIndex[MAX_BUILDING], gBuildingCost[MAX_BUILDING]
+
+

@@ -3,6 +3,8 @@
 
 init_gamerules(){
 	setupLevel(1, "先头部队", 300)
+
+	setupBuilding("铁丝网", 150.0, Float:{-90.0, -8.0, -0.0}, Float:{90.0, 8.0, 150.0}, "models/rpg/building/zsh_wall_1.mdl", 200)
 }
 
 fw_afterCreate(ent, Float:origin[3], Float:zOffset){
