@@ -192,6 +192,18 @@ public task_resetround(){
 public task_showfirstlevelname(){
 	set_hudmessage(120,54,54, 0.02, 0.62, 1, 0.0, 6.5,0.1, 0.1, HUD_GAMEMSG)
 	show_hudmessage(0, "%s", gLevelName[1])
+
+	client_cmd(0, "spk %s", gSounds[1])
+
+	remove_task(TASK9)
+	set_task(random_float(5.0, 10.0), "task_playAmbienceSound", TASK9)
+}
+
+public task_playAmbienceSound(){
+	client_cmd(0, "spk %s", gSounds[0])
+
+	remove_task(TASK9)
+	set_task(random_float(72.0, 90.0), "task_playAmbienceSound", TASK9)
 }
 
 public task_spinweapon(ent)

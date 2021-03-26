@@ -27,6 +27,7 @@ new cvar_bodydelay, cvar_gameseconds, cvar_removeweapon
 #define TASK6 6000
 #define TASK7 7000
 #define TASK8 8000
+#define TASK9 9000
 
 new gMaxPlayers
 
@@ -112,4 +113,11 @@ new Float:gBuildingMins[MAX_BUILDING][3], Float:gBuildingMaxs[MAX_BUILDING][3]
 new Float:gBuildingHealth[MAX_BUILDING]
 new gBuildingModelIndex[MAX_BUILDING], gBuildingCost[MAX_BUILDING]
 
+/* sounds */
 
+new const gSounds[][] = {
+	"rpg/guardmod/zombies_amb.wav", // ambience
+	"rpg/guardmod/warning.wav", 
+	"rpg/building/build_impossible.wav",  // building
+	"rpg/building/build_complete.wav"
+}

@@ -301,7 +301,7 @@ check_jumping(ent, Float:vecVel[3])
 				
 				static class[33]
 				pev(iHit, pev_classname, class, 32)
-				if(equal(class, myclass) || equal(class, "player")) 
+				if(equal(class, "player") || pev(ent, PEV_MONSTER) == MONSTER || pev(ent, PEV_MONSTER) == NONPLAYER) 
 				{
 					break
 				}

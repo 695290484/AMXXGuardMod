@@ -714,7 +714,7 @@ stock get_csteam_num(team, IsAlive){
 	for(new i=1;i<=gMaxPlayers;++i){
 		if(!is_user_connected(i)) continue
 		if(IsAlive && !is_user_alive(i)) continue
-		if(team && get_user_team(i) != team) continue
+		if(team && get_pdata_int(i, 114, 5) != team) continue
 		count++
 	}
 	return count
@@ -961,19 +961,115 @@ stock Float:fm_distance_to_floor(index, ignoremonsters = 1)
 	return ret > 0 ? ret : 0.0;
 }
 
-stock CheckStuck(iEntity, Float:fMin[3], Float:fMax[3])
+stock CheckStuck(Float:testorigin[3], Float:fMin[3], Float:fMax[3])
 {
-	new Float:testorigin[3]
-	pev(iEntity, pev_origin, testorigin)
+	return isBlockStuck(testorigin, fMin, fMax)?0:1
+}
 
-	new Float:Origin_F[3], Float:Origin_R[3], Float:Origin_L[3], Float:Origin_B[3]
-	xs_vec_copy(testorigin, Origin_L) ; xs_vec_copy(testorigin, Origin_F)
-	xs_vec_copy(testorigin, Origin_B) ; xs_vec_copy(testorigin, Origin_R)
-	Origin_F[0] += fMax[0] ; Origin_B[0] += fMin[0]
-	Origin_L[1] += fMax[1] ; Origin_R[1] += fMin[1]
-	if(engfunc(EngFunc_PointContents, Origin_F) != CONTENTS_EMPTY || engfunc(EngFunc_PointContents, Origin_R) != CONTENTS_EMPTY ||
-	engfunc(EngFunc_PointContents, Origin_L) != CONTENTS_EMPTY || engfunc(EngFunc_PointContents, Origin_B) != CONTENTS_EMPTY)
-		return 0
 
-	return 1
+stock bool:isBlockStuck(Float:vOrigin[3], Float:fSizeMin[3], Float:fSizeMax[3])
+{
+	new content;
+	
+	new Float:vPoint[3];
+	
+	//decrease the size values of the block
+	fSizeMin[0] += 1.0;
+	fSizeMax[0] -= 1.0;
+	fSizeMin[1] += 1.0;
+	fSizeMax[1] -= 1.0; 
+	
+	//get the contents of the centre of all 6 faces of the block
+	for (new i = 0; i < 14; ++i)
+	{
+		//start by setting the point to the origin of the block (the middle)
+		vPoint = vOrigin;
+		
+		//set the values depending on the loop number
+		switch (i)
+		{
+			//corners
+			case 0: { vPoint[0] += fSizeMax[0]; vPoint[1] += fSizeMax[1]; vPoint[2] += fSizeMax[2]; }
+			case 1: { vPoint[0] += fSizeMin[0]; vPoint[1] += fSizeMax[1]; vPoint[2] += fSizeMax[2]; }
+			case 2: { vPoint[0] += fSizeMax[0]; vPoint[1] += fSizeMin[1]; vPoint[2] += fSizeMax[2]; }
+			case 3: { vPoint[0] += fSizeMin[0]; vPoint[1] += fSizeMin[1]; vPoint[2] += fSizeMax[2]; }
+			case 4: { vPoint[0] += fSizeMax[0]; vPoint[1] += fSizeMax[1]; vPoint[2] += fSizeMin[2]; }
+			case 5: { vPoint[0] += fSizeMin[0]; vPoint[1] += fSizeMax[1]; vPoint[2] += fSizeMin[2]; }
+			case 6: { vPoint[0] += fSizeMax[0]; vPoint[1] += fSizeMin[1]; vPoint[2] += fSizeMin[2]; }
+			case 7: { vPoint[0] += fSizeMin[0]; vPoint[1] += fSizeMin[1]; vPoint[2] += fSizeMin[2]; }
+			
+			//centre of faces
+			case 8: { vPoint[0] += fSizeMax[0]; }
+			case 9: { vPoint[0] += fSizeMin[0]; }
+			case 10: { vPoint[1] += fSizeMax[1]; }
+			case 11: { vPoint[1] += fSizeMin[1]; }
+			case 12: { vPoint[2] += fSizeMax[2]; }
+			case 13: { vPoint[2] += fSizeMin[2]; }
+		}
+		
+		content = point_contents(vPoint);
+		
+		if (content && content != CONTENTS_EMPTY)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}  
+
+stock overlapInSphere(iEntity, Float:vOrigin[3], Float:fSizeMin[3], Float:fSizeMax[3])
+{
+	new others = -1, Float:area2[3], Float:areaMins[3], Float:areaMaxs[3]
+	while((others = engfunc(EngFunc_FindEntityInSphere, others, vOrigin, 280.0)) > 0){
+		if(pev_valid(others) && iEntity != others){
+			pev(others, pev_origin, area2)
+			pev(others, pev_mins, areaMins)
+			pev(others, pev_maxs, areaMaxs)
+			if(isAreaOverlaped(vOrigin, fSizeMin, fSizeMax, area2, areaMins, areaMaxs))
+				return 1
+		}
+	}
+	return 0
+}
+
+stock isAreaOverlaped(Float:area2[3], Float:areaMins[3], Float:areaMaxs[3], Float:area1[3], Float:fSizeMin[3], Float:fSizeMax[3]){
+	new Float:vPoint[3];
+	for (new i = 0; i < 8; ++i){
+		vPoint = area1
+		switch (i)
+		{
+			case 0: { vPoint[0] += fSizeMax[0]; vPoint[1] += fSizeMax[1]; vPoint[2] += fSizeMax[2]; }
+			case 1: { vPoint[0] += fSizeMin[0]; vPoint[1] += fSizeMax[1]; vPoint[2] += fSizeMax[2]; }
+			case 2: { vPoint[0] += fSizeMax[0]; vPoint[1] += fSizeMin[1]; vPoint[2] += fSizeMax[2]; }
+			case 3: { vPoint[0] += fSizeMin[0]; vPoint[1] += fSizeMin[1]; vPoint[2] += fSizeMax[2]; }
+			case 4: { vPoint[0] += fSizeMax[0]; vPoint[1] += fSizeMax[1]; vPoint[2] += fSizeMin[2]; }
+			case 5: { vPoint[0] += fSizeMin[0]; vPoint[1] += fSizeMax[1]; vPoint[2] += fSizeMin[2]; }
+			case 6: { vPoint[0] += fSizeMax[0]; vPoint[1] += fSizeMin[1]; vPoint[2] += fSizeMin[2]; }
+			case 7: { vPoint[0] += fSizeMin[0]; vPoint[1] += fSizeMin[1]; vPoint[2] += fSizeMin[2]; }
+		}
+		if(isPointInArea(vPoint, area2, areaMins, areaMaxs)){
+			return 1
+		}
+	}
+	return 0
+}
+
+stock isPointInArea(Float:point[3], Float:areaPos[3], Float:areaMins[3], Float:areaMaxs[3]){
+	new Float:TempMin[3], Float:TempMax[3]
+	TempMin[0] = areaPos[0] + areaMins[0]
+	TempMin[1] = areaPos[1] + areaMins[1]
+	TempMin[2] = areaPos[2] + areaMins[2]	
+	TempMax[0] = areaPos[0] + areaMaxs[0]
+	TempMax[1] = areaPos[1] + areaMaxs[1]
+	TempMax[2] = areaPos[2] + areaMaxs[2]
+	if( TempMin[0] < point[0] && 
+		TempMin[1] < point[1] && 
+		TempMin[2] < point[2] && 
+		TempMax[0] > point[0] && 
+		TempMax[1] > point[1] && 
+		TempMax[2] > point[2] )
+		return 1
+
+	return 0
 }

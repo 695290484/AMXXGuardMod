@@ -19,6 +19,8 @@ setupBuilding(name[], Float:health, Float:mins[3], Float:maxs[3], model[], cost)
 }
 
 buildMenu(iPlayer){
+	client_cmd(iPlayer, "weapon_knife")
+
 	new menuid, menu[256]
 	formatex(menu, charsmax(menu), "建造\R价格")
 	menuid = menu_create(menu, "buildermenuhandle")
@@ -86,7 +88,7 @@ CreateBuilding(iPlayer, BuildingId)
 	set_pev(iEntity, pev_solid, SOLID_NOT)
 	set_pev(iEntity, pev_modelindex, gBuildingModelIndex[BuildingId])
 	set_pev(iEntity, pev_rendermode, kRenderTransColor)
-	set_pev(iEntity, pev_renderfx, kRenderFxPulseSlow)
+	set_pev(iEntity, pev_renderfx, 0)
 	set_pev(iEntity, pev_rendercolor, Float:{255.0,255.0,255.0})
 	set_pev(iEntity, pev_renderamt, 130.0)
 	set_pev(iEntity, pev_nextthink, get_gametime()+0.1)
@@ -97,7 +99,7 @@ CreateBuilding(iPlayer, BuildingId)
 	set_pev(iEntity, PEV_MONSTER, NONPLAYER)
 	set_pev(iEntity, pev_health, gBuildingHealth[BuildingId])
 	set_pev(iEntity, pev_max_health, gBuildingHealth[BuildingId])
-	engfunc(EngFunc_SetSize, iEntity, Float:{0.0,0.0,0.0}, Float:{0.0,0.0,0.0})
+	engfunc(EngFunc_SetSize, iEntity, gBuildingMins[BuildingId], gBuildingMaxs[BuildingId])
 	engfunc(EngFunc_SetOrigin, iEntity, fOrigin)
 	gIsBuilding[iPlayer] = iEntity
 	//engfunc(EngFunc_EmitSound, iEntity, CHAN_STATIC, SOUND_BUILDING_SELECT, 1.0, ATTN_NORM, 0, PITCH_NORM)
@@ -132,6 +134,7 @@ moveBuilding(iPlayer, uc){
 		if(gRotation[iPlayer] > 3) gRotation[iPlayer] = 0
 		
 		set_pev(iEntity, pev_angles, fAngle)
+		reset_box(iPlayer, iEntity, pev(iEntity, PEV_BUILDINGID))
 	}
 }
 
@@ -155,21 +158,10 @@ SetBuildingComplete(iEntity)
 	set_pev(iEntity, pev_takedamage, DAMAGE_YES)
 	set_pev(iEntity, pev_solid, SOLID_BBOX)
 
-	new Float:fMin[3], Float:fMax[3]
-	if(gRotation[iPlayer] == 1 || gRotation[iPlayer] == 3)
-	{
-		fMin[0] = gBuildingMins[BuildingId][1]; fMin[1] = gBuildingMins[BuildingId][0]; fMin[2] = gBuildingMins[BuildingId][2]
-		fMax[0] = gBuildingMaxs[BuildingId][1]; fMax[1] = gBuildingMaxs[BuildingId][0]; fMax[2] = gBuildingMaxs[BuildingId][2]
-	}
-	else
-	{
-		xs_vec_copy(gBuildingMins[BuildingId], fMin)
-		xs_vec_copy(gBuildingMaxs[BuildingId], fMax)
-	}
-	engfunc(EngFunc_SetSize, iEntity, fMin, fMax)
+	reset_box(iPlayer, iEntity, BuildingId)
 	gIsBuilding[iPlayer] = 0
 	gRotation[iPlayer] = 0
-	//engfunc(EngFunc_EmitSound, iEntity, CHAN_STATIC, SOUND_BUILDING_COMPLETE, 1.0, ATTN_NORM, 0, PITCH_NORM)
+	engfunc(EngFunc_EmitSound, iEntity, CHAN_STATIC, gSounds[3], 1.0, ATTN_NORM, 0, PITCH_NORM)
 }
 
 CancleBuilding(iPlayer, tips = 0)
@@ -184,6 +176,21 @@ CancleBuilding(iPlayer, tips = 0)
 		gIsBuilding[iPlayer] = 0
 		gRotation[iPlayer] = 0
 	}
+}
+
+reset_box(iPlayer, iEntity, BuildingId){
+	new Float:fMin[3], Float:fMax[3]
+	if(gRotation[iPlayer] == 1 || gRotation[iPlayer] == 3)
+	{
+		fMin[0] = gBuildingMins[BuildingId][1]; fMin[1] = gBuildingMins[BuildingId][0]; fMin[2] = gBuildingMins[BuildingId][2]
+		fMax[0] = gBuildingMaxs[BuildingId][1]; fMax[1] = gBuildingMaxs[BuildingId][0]; fMax[2] = gBuildingMaxs[BuildingId][2]
+	}
+	else
+	{
+		xs_vec_copy(gBuildingMins[BuildingId], fMin)
+		xs_vec_copy(gBuildingMaxs[BuildingId], fMax)
+	}
+	engfunc(EngFunc_SetSize, iEntity, fMin, fMax)
 }
 
 // --------------------- events --------------------- 
@@ -201,9 +208,9 @@ public HAM_Knife_PrimaryAttack_Post(iWpEntity)
 	pev(iEntity, pev_maxs, fMax)
 
 	pev(iEntity, pev_origin, Origin)
-	if(!CheckStuck(iEntity, fMin, fMax) || engfunc(EngFunc_PointContents, Origin) != CONTENTS_EMPTY)
+	if(!CheckStuck(Origin, fMin, fMax) || engfunc(EngFunc_PointContents, Origin) != CONTENTS_EMPTY || overlapInSphere(iEntity, Origin, fMin, fMax))
 	{
-		//client_cmd(iPlayer, "spk %s", SOUND_BUILDING_NO)
+		client_cmd(iPlayer, "spk %s", gSounds[2])
 		client_print(iPlayer, print_center, "建造空间不足!")
 		return
 	}

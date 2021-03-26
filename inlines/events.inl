@@ -17,6 +17,7 @@ public fw_StartFrame_Post(){
 			CheckMonster = fCurTime + 20.0
 
 			remove_task(TASK8)
+			remove_task(TASK9)
 			set_task(9.5, "task_showfirstlevelname", TASK8)
 		}
 	}
@@ -39,7 +40,8 @@ public fw_StartFrame_Post(){
 		static tar, body, monstername[32],Float:hp,Float:maxhp
 		static team, Float:respawn
 		for(new id = 1; id<=gMaxPlayers; ++id){
-			team = get_user_team(id)
+			if(!is_user_connected(id)) continue
+			team = get_pdata_int(id, 114, 5)
 			
 			// 指向目标显示信息
 			if(is_user_alive(id)){
@@ -82,7 +84,7 @@ public fw_StartFrame_Post(){
 
 			}
 
-			if(is_user_connected(id) && team>0 && team<3  && !is_user_alive(id) && (gDoNotCreatePrincess || IsNonPlayer(gPrincess))){
+			if(team>0 && team<3  && !is_user_alive(id) && (gDoNotCreatePrincess || IsNonPlayer(gPrincess))){
 				respawn = gUserRespawnCD[id] - fCurTime + gUserLastDeath[id]
 				if(respawn >= 0.0){
 					client_print(id, print_center, "即将复活: %1.f", respawn)
@@ -193,7 +195,7 @@ public EventStartRound(){
 				origin[2] += 41.0
 				if(is_hull_vacant(origin)){
 					resetPrincess(gPrincess, origin)
-					client_color(0, "/ctr公主/y出现在了地图上,/g找到/y并/g保护/y她!")
+					client_color(0, "/y任务:/g找到/ctr公主/y,并/g保护/y她!")
 					gPrincessTime = get_gametime()
 					ExecuteForward(g_fwMissionTrigger, g_fwDummyResult, mt_PrincessShowUp, gPrincess)
 					break
@@ -224,7 +226,7 @@ public EventHLTV(){
 
 public msgTeamInfo(iMsgID, iDest, iReceiver){
 	// 最后一个玩家换队伍至观察者
-	if(get_csteam_num(1, 0) + get_csteam_num(2, 0) == 0){
+	if(gIsGameStarted && get_csteam_num(1, 0) + get_csteam_num(2, 0) == 0){
 		remove_task(TASK7)
 		set_task(3.0, "task_resetround", TASK7)
 		gIsGameStarted = 0

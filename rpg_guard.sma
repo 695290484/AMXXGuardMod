@@ -127,6 +127,9 @@ public plugin_precache(){
 	server_cmd("sv_skycolor_r 0")
 	server_cmd("sv_skycolor_g 0")
 	server_cmd("sv_skycolor_b 0")
+
+	for(new i;i< sizeof gSounds;++i)
+		precache_sound(gSounds[i])
 }
 
 public plugin_natives(){

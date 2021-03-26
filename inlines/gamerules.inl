@@ -2,7 +2,16 @@
 /* 游戏规则 */
 
 init_gamerules(){
-	setupLevel(1, "先头部队", 300)
+	setupLevel(1, "突袭小队", 100)
+	setupLevel(2, "先头部队", 300)
+	setupLevel(3, "突击部队", 600)
+	setupLevel(4, "攻城部队", 1000)
+	setupLevel(5, "精锐部队", 1500)
+	setupLevel(6, "特种部队", 2500)
+	setupLevel(7, "御用部队", 3200)
+	setupLevel(8, "魔族部队", 4200)
+	setupLevel(9, "魔族大将", 4250)
+	setupLevel(10, "魔王!", 4251)
 
 	setupBuilding("铁丝网", 150.0, Float:{-90.0, -8.0, -0.0}, Float:{90.0, 8.0, 150.0}, "models/rpg/building/zsh_wall_1.mdl", 200)
 }
@@ -50,6 +59,8 @@ updateLevel(){
 	}else if(lastLevel != gCurLevel){
 		set_hudmessage(120,54,54, 0.02, 0.62, 1, 0.0, 6.5,0.1, 0.1, HUD_GAMEMSG)
 		show_hudmessage(0, "%s", gLevelName[gCurLevel])
+
+		client_cmd(0, "spk %s", gSounds[1])
 
 		CheckMonster = get_gametime() + 15.0 // 切换难度的时候,给一定时间反应
 		ExecuteForward(g_fwMissionTrigger, g_fwDummyResult, mt_ChangeLevel, gCurLevel)

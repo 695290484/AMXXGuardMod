@@ -123,6 +123,7 @@ public _native_rpg_animation(iPlugin,iParams){
 	}
 	again = get_param(5)
 	gaptime = get_param_f(6)
+
 	SetAnimationGaptime(iEntity, iAnim, framerate, again, gaptime)
 }
 
