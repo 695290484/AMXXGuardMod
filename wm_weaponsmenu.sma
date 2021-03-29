@@ -1,4 +1,4 @@
-#include <amxmodx>
+﻿#include <amxmodx>
 #include <fakemeta>
 #include <hamsandwich>
 
@@ -15,6 +15,7 @@ public plugin_init()
 	register_weapons(0, "AK-47", "@weapon_ak47", 1)
 	register_weapons(0, "M4A1", "@weapon_m4a1", 1)
 	register_weapons(0, "M249", "@weapon_m249", 1)
+	register_weapons(0, "XM1014", "@weapon_xm1014", 1)
 	register_weapons(1, "USP", "@weapon_usp", 1)
 	register_weapons(1, "沙漠之鹰", "@weapon_deagle", 1)
 	register_weapons(2, "海豹短刀", "@weapon_knife", 1)

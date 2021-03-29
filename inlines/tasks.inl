@@ -180,12 +180,14 @@ public task_checkplayercount(tid){
 		gIsGameStarted = 1
 		server_cmd("endround 0")
 		remove_task(tid)
-		gRoundStart = ExecuteForward(g_fwMissionTrigger, g_fwDummyResult, mt_MissionOver, 0)
+		gRoundStart = 0
+		ExecuteForward(g_fwMissionTrigger, g_fwDummyResult, mt_MissionOver, 0)
 	}
 }
 
 public task_resetround(){
 	server_cmd("endround T")
+	gRoundStart = 0
 	ExecuteForward(g_fwMissionTrigger, g_fwDummyResult, mt_MissionOver, 0)
 }
 

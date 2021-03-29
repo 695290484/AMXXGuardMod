@@ -19,8 +19,6 @@ setupBuilding(name[], Float:health, Float:mins[3], Float:maxs[3], model[], cost)
 }
 
 buildMenu(iPlayer){
-	client_cmd(iPlayer, "weapon_knife")
-
 	new menuid, menu[256]
 	formatex(menu, charsmax(menu), "建造\R价格")
 	menuid = menu_create(menu, "buildermenuhandle")
@@ -44,15 +42,11 @@ public buildermenuhandle(id, menuid, key){
 	if(key < 0)
 		return
 
-	if(get_user_weapon(id) != CSW_KNIFE){
-		buildMenu(id)
-		client_print(id, print_center, "请切换小刀后使用!")
-		return
-	}
+	client_cmd(id, "weapon_knife")
 
 	if(fm_get_user_money(id) >= gBuildingCost[key]){
 		if(CreateBuilding(id, key)){
-			client_print(id, print_center, "使用:R键旋转 | 左键确认 | 右键取消")
+			client_print(id, print_center, "方法: R键旋转 | 左键确认 | 右键取消")
 		}else{
 			client_print(id, print_center, "不能重复选择!")
 		}

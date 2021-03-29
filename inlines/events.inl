@@ -85,8 +85,8 @@ public fw_StartFrame_Post(){
 			}
 
 			if(team>0 && team<3  && !is_user_alive(id) && (gDoNotCreatePrincess || IsNonPlayer(gPrincess))){
-				respawn = gUserRespawnCD[id] - fCurTime + gUserLastDeath[id]
-				if(respawn >= 0.0){
+				respawn = gUserRespawnCD[id] - fCurTime + gUserLastDeath[id] + 1.0
+				if(respawn >= 1.0){
 					client_print(id, print_center, "即将复活: %1.f", respawn)
 				}else{
 					client_print(id, print_center, " ")
@@ -128,8 +128,9 @@ public fw_StartFrame_Post(){
 }
 
 public fw_PlayerKilled(victim, iAttacker, shouldgib){
-	gUserScore[victim] = max(gUserScore[victim] - gCurLevel*5, 0)
-	UpdateFrags(victim, gUserScore[victim], -1, 1)
+	// No more points reduction 不减分就不会掉难度 
+	//gUserScore[victim] = max(gUserScore[victim] - gCurLevel*5, 0)
+	//UpdateFrags(victim, gUserScore[victim], -1, 1)
 
 	gUserLastDeath[victim] = get_gametime()
 	gUserRespawnCD[victim] = floatmin(10.0, gUserRespawnCD[victim] + 3.0)
@@ -173,6 +174,7 @@ public fw_FMChangeLevel(){
 	remove_task(TASK7)
 }
 
+/* 只有平局才会触发(mp修改了设定) */
 public EventRoundEnd(){
 	gRoundStart = 0
 }
@@ -221,7 +223,7 @@ public EventHLTV(){
 	gCurrentDayTime = 0
 	gCurrentDarkLevel = 0
 
-	gCurLevel = 0
+	gCurLevel = 1
 }
 
 public msgTeamInfo(iMsgID, iDest, iReceiver){
@@ -240,12 +242,6 @@ public HAM_HostageKilled_post(iEntity, inflictor, attacker, Float:damage, damage
 	if(pev(iEntity, pev_deadflag) != DEAD_NO){
 		set_hudmessage(120,54,54, 0.02, 0.62, 1, 0.0, 5.5, 0.2, 0.2, HUD_GAMEMSG)
 		show_hudmessage(0, "任务失败: 公主已经被杀害...")
-
-		new hb = GetMD_int(iEntity, md_healthbar)
-		if(pev_valid(hb)){
-			set_pev(hb, pev_flags, FL_KILLME)
-			SetMD_int(iEntity, md_healthbar, 0)
-		}
 
 		server_cmd("endround T")
 		gRoundStart = 0

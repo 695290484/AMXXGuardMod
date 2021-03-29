@@ -776,7 +776,7 @@ stock CheckHealthBar(ent){
 	if(GetMD_int(ent, md_healthbar) == 1){
 		new hb = engfunc(EngFunc_CreateNamedEntity, engfunc(EngFunc_AllocString, "env_sprite"))
 		if(pev_valid(hb)){
-			set_pev(hb, pev_scale, 0.15)
+			set_pev(hb, pev_scale, 0.12)
 			engfunc(EngFunc_SetModel, hb, "sprites/rpg/healthbar.spr")
 			SetMD_int(ent, md_healthbar, hb)
 			set_pev(hb, pev_iuser4, 75)
