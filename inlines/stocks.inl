@@ -1034,6 +1034,8 @@ stock overlapInSphere(iEntity, Float:vOrigin[3], Float:fSizeMin[3], Float:fSizeM
 }
 
 stock isAreaOverlaped(Float:area2[3], Float:areaMins[3], Float:areaMaxs[3], Float:area1[3], Float:fSizeMin[3], Float:fSizeMax[3]){
+/*
+	// 处理方式1
 	new Float:vPoint[3];
 	for (new i = 0; i < 8; ++i){
 		vPoint = area1
@@ -1052,6 +1054,21 @@ stock isAreaOverlaped(Float:area2[3], Float:areaMins[3], Float:areaMaxs[3], Floa
 			return 1
 		}
 	}
+*/
+
+	// 处理方式2
+	new Float:box1[2][3], Float:box2[2][3]
+	for(new i;i<3;++i){
+		box1[0][i] = area2[i]+areaMins[i]
+		box1[1][i] = area2[i]+areaMaxs[i]
+		box2[0][i] = area1[i]+fSizeMin[i]
+		box2[1][i] = area1[i]+fSizeMax[i]
+	}
+	new Float:boxdist2= get_box_distance2(box1[0],box1[1],box2[0],box2[1])
+	if(boxdist2<0.1){
+		return 1
+	}
+
 	return 0
 }
 
