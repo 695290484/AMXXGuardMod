@@ -85,7 +85,7 @@ new gDoNotCreatePrincess = 0
 #define MAX_LEVEL 30
 new gMonsterEntCounter
 new gMaxMonster = 50
-new gCurLevel = 0, gMaxLevel = 0
+new gCurLevel = 1, gMaxLevel = 0
 new gLevelScore[MAX_LEVEL]
 new gLevelName[MAX_LEVEL][32]
 new gUserScore[33], Float:gUserRespawnCD[33], Float:gUserLastDeath[33]

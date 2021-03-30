@@ -62,7 +62,7 @@ updateLevel(){
 
 		client_cmd(0, "spk %s", gSounds[1])
 
-		CheckMonster = get_gametime() + 15.0 // 切换难度的时候,给一定时间反应
+		CheckMonster = get_gametime() + 30.0 // 切换难度的时候,给一定时间反应
 		ExecuteForward(g_fwMissionTrigger, g_fwDummyResult, mt_ChangeLevel, gCurLevel)
 	}
 }

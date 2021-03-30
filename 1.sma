@@ -30,7 +30,7 @@ new Float:Refresh
 public rpg_fw_npc_refresh(level, numleft){
 	static Float:gtime
 	gtime = get_gametime()
-	if(numleft){ // if(level == 0 && numleft){
+	if(level == 1 && numleft){
 		if(gtime >= Refresh){
 			Refresh = gtime + 1.0
 			rpg_create_g({0.0,0.0,0.0}, {0.0,0.0,0.0}, 1, gClass, "普通僵尸", 100.0, {-16.0,-16.0,-36.0}, {16.0,16.0,36.0}, zb)

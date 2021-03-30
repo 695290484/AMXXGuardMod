@@ -29,6 +29,7 @@ public plugin_init()
 	register_plugin("RPG-CS Guard Mod","1.0","zhiJiaN")
 
 	register_forward(FM_StartFrame, "fw_StartFrame_Post", 1)
+	register_forward(FM_GetGameDescription,"fw_GameDesc")
 	RegisterHam(Ham_Killed, "player", "fw_PlayerKilled")
 	RegisterHam(Ham_TraceAttack, "player", "fw_PlayerTraceAttack")
 	RegisterHam(Ham_TakeDamage, "player", "fw_PlayerTakeDamage")

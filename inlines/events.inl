@@ -139,7 +139,7 @@ public fw_PlayerKilled(victim, iAttacker, shouldgib){
 }
 
 public client_putinserver(id){
-	gUserScore[id] = 0
+	//gUserScore[id] = 0
 	gUserRespawnCD[id] = 0.0
 	gUserLastDeath[id] = 0.0
 	gUserTargetMonster[id] = 0
@@ -159,7 +159,7 @@ public client_disconnect(id){
 		set_task(3.0, "task_resetround", TASK7)
 		gIsGameStarted = 0
 	}
-	gUserScore[id] = 0
+	//gUserScore[id] = 0
 
 	CancleBuilding(id)
 }
@@ -214,8 +214,10 @@ public EventStartRound(){
 }
 
 public EventHLTV(){
-	for(new id=1;id<=gMaxPlayers;++id)
+	for(new id=1;id<=gMaxPlayers;++id){
 		client_putinserver(id)
+		gUserScore[id] = 0	// 得分只在换回合时重置
+	}
 
 	remove_all_npc()
 
@@ -392,4 +394,10 @@ public fw_CmdStart(iPlayer, uc_handle, seed)
 	if(!is_user_alive(iPlayer)) return
 
 	moveBuilding(iPlayer, uc_handle)
+}
+
+public fw_GameDesc()
+{
+	forward_return(FMV_STRING, "RPG-Guard")
+	return FMRES_SUPERCEDE
 }

@@ -16,7 +16,7 @@ init_cvars(){
 	// 移除武器时间
 	cvar_removeweapon = e_register_cvar("rg_removeweapon", "15.0")
 
-	server_cmd("mp_round_infinite 1;mp_maxmoney 999999999;mp_respawn_immunitytime 3")
+	server_cmd("mp_round_infinite 1;mp_maxmoney 999999999;mp_respawn_immunitytime 3;mp_timelimit 0;")
 	server_cmd("mp_infinite_ammo 2;mp_give_player_c4 0;mp_buy_anywhere 0")
 	server_cmd("mp_autoteambalance 0")
 }
