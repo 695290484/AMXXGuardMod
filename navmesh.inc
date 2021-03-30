@@ -1,4 +1,4 @@
-#if defined _navmesh_included
+﻿#if defined _navmesh_included
   #endinput
 #endif
 #define _navmesh_included
@@ -17,6 +17,17 @@ enum NavAttributeType
 	NAV_NO_JUMP = 0x08, // inhibit discontinuity jumping
 }
 
+enum NavTraverseType
+{
+	GO_NORTH = 0,
+	GO_EAST,
+	GO_SOUTH,
+	GO_WEST,
+	GO_LADDER_UP,
+	GO_LADDER_DOWN,
+	GO_JUMP,
+	NUM_TRAVERSE_TYPES
+}
 
 /*
 	执行寻路(起点,终点,路径类型) 返回路点数量
@@ -68,6 +79,13 @@ native navmesh_randomPosition(Float:goal[3])
 	返回区域id
 */
 native navmesh_getRandomAreaPos(Float:position[3], Float:minsDistance, Float:maxDistance, Float:goal[3])
+
+
+/*
+	获取移动方式
+	返回TraverseType
+*/
+native navmesh_getTraverseType(pathIndex)
 
 
 /* ========== 以下是util ========== */
