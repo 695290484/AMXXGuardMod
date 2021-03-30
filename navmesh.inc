@@ -1,4 +1,4 @@
-﻿#if defined _navmesh_included
+#if defined _navmesh_included
   #endinput
 #endif
 #define _navmesh_included

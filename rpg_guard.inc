@@ -84,4 +84,35 @@ stock isEntByClass(ent, const classname[]){
 	return 0
 }
 
+
+stock util_Rendering(entity, fx = kRenderFxNone, r = 255, g = 255, b = 255, render = kRenderNormal, amount = 16, fTime=0.0)
+{
+	if (!pev_valid(entity))
+		return
+
+	new Float:color[3]
+	color[0] = float(r)
+	color[1] = float(g)
+	color[2] = float(b)
+	
+	set_pev(entity, pev_renderfx, fx)
+	set_pev(entity, pev_rendercolor, color)
+	set_pev(entity, pev_rendermode, render)
+	set_pev(entity, pev_renderamt, float(amount))
+
+	if(fTime>0.0)
+	{
+		if(task_exists(entity+9501)) remove_task(entity+9501)
+		set_task(fTime, "task_reset_rendering", entity+9501)
+	}
+}
+
+public task_reset_rendering(tid)
+{
+	new id = tid - 9901
+	if(!pev_valid(id)) return
+
+	util_Rendering(id)
+}
+
 #endif
