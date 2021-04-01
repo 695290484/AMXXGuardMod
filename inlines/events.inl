@@ -194,8 +194,8 @@ public EventStartRound(){
 		while(gRoundStart){
 			if( (!gPrincessCenter[0]&&!gPrincessCenter[1]&&!gPrincessCenter[2]&&navmesh_randomPosition(origin))
 			|| ((gPrincessCenter[0]||gPrincessCenter[1]||gPrincessCenter[2])&& navmesh_getRandomAreaPos(gPrincessCenter, 0.0, 1200.0, origin)) ){
-				origin[2] += 41.0
-				if(is_hull_vacant(origin)){
+				origin[2] += 34.0
+				if(is_hull_vacant(origin, HULL_LARGE)){
 					resetPrincess(gPrincess, origin)
 					client_color(0, "/y任务:/g找到/ctr公主/y,并/g保护/y她!")
 					gPrincessTime = get_gametime()
@@ -217,6 +217,8 @@ public EventHLTV(){
 	for(new id=1;id<=gMaxPlayers;++id){
 		client_putinserver(id)
 		gUserScore[id] = 0	// 得分只在换回合时重置
+		if(is_user_connected(id))
+			UpdateFrags(id, gUserScore[id], -1, 1)
 	}
 
 	remove_all_npc()

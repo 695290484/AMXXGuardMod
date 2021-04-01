@@ -192,6 +192,9 @@ public task_resetround(){
 }
 
 public task_showfirstlevelname(){
+	if(gCurLevel != 1)
+		return
+	
 	set_hudmessage(120,54,54, 0.02, 0.62, 1, 0.0, 6.5,0.1, 0.1, HUD_GAMEMSG)
 	show_hudmessage(0, "%s", gLevelName[1])
 

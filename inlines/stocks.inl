@@ -52,16 +52,16 @@ stock can_see_ign_entity(ent, Float:origin[3], Float:origin2[3])
 	return 1
 }
 
-stock can_see_entity(ent, ent2)
+stock can_see_entity(ent, ent2, dontignoremonster=false)
 {
 	new Float:origin1[3], Float:origin2[3], Float:mins[3]
 	pev(ent, pev_mins, mins)
 	pev(ent, pev_origin, origin1)
-	origin1[2] += mins[2] + 5.0
+	origin1[2] += 5.0
 	pev(ent2, pev_origin, origin2)
 	origin2[2] += 20.0
 
-	engfunc(EngFunc_TraceLine, origin1, origin2, DONT_IGNORE_MONSTERS, ent, 0)
+	engfunc(EngFunc_TraceLine, origin1, origin2, dontignoremonster?IGNORE_MONSTERS:DONT_IGNORE_MONSTERS, ent, 0)
 
 	new Float:flFraction
 	get_tr2(0, TraceResult:TR_flFraction, flFraction)
@@ -429,6 +429,24 @@ stock collect_spawns_ent2(const classname[])
 		if (g_spawnCount2 >= sizeof g_spawns2) break;
 	}
 }
+
+stock is_hull_vacant_monster(ent, Float:origin[3], hull=HULL_HUMAN)
+{
+	new Float:v[3], Float:mins[3]
+	v = origin
+	pev(ent, pev_mins, mins)
+	if(mins[2] >= -36.0){
+		v[2] += 36.0
+	}
+
+	engfunc(EngFunc_TraceHull, v, v, DONT_IGNORE_MONSTERS, hull, 0, 0)
+	
+	if (!get_tr2(0, TR_StartSolid) && !get_tr2(0, TR_AllSolid) && get_tr2(0, TR_InOpen))
+		return true;
+	
+	return false;
+}
+
 
 stock is_hull_vacant(Float:origin[3], hull=HULL_HUMAN)
 {

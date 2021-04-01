@@ -38,14 +38,14 @@ setupLevel(level, levelName[], targetScore){
 updateLevel(){
 	new lastLevel = gCurLevel
 	new allScore = calcAllScore()
-	for(new i = 0; i < MAX_LEVEL; ++i){
+	for(new i = 1; i <= MAX_LEVEL; ++i){
 		if(!gLevelScore[i])
 			continue
 
 		if(allScore < gLevelScore[i])
 			break
 		
-		gCurLevel = i + 1
+		gCurLevel = i
 	}
 	if(gCurLevel > gMaxLevel){
 		set_hudmessage(120,54,54, 0.02, 0.62, 1, 0.0, 5.5, 0.2, 0.2, HUD_GAMEMSG)
@@ -84,8 +84,10 @@ changeMonstersPosition(ent, Float:zOffset, retry=0){
 	new Float:origin[3]
 	if(do_random_spawn(ent, get_pcvar_num(spawn_use_csdm), origin)){
 		origin[2] += zOffset
-		if(!is_hull_vacant(origin)){
-			return 0 //changeMonstersPosition(ent, zOffset, retry++)
+		//server_print("%f,%f,%d",origin[2],zOffset,is_hull_vacant_monster(ent, origin))
+		if(!is_hull_vacant_monster(ent, origin)){
+			retry ++
+			return changeMonstersPosition(ent, zOffset, retry)
 		}
 		gMonsterEntCounter ++
 		engfunc(EngFunc_SetOrigin, ent, origin)

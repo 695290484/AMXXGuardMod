@@ -186,3 +186,6 @@ public _native_set_monsterArea(iPlugin,iParams){
 public _native_get_darklevel(){
 	return gCurrentDarkLevel
 }
+
+public _native_is_monster(ent) return IsMonster(ent)
+public _native_is_nonplayer(ent) return IsNonPlayer(ent)

@@ -14,8 +14,8 @@
 #include "rpg_guard.inc"
 
 #include "inlines/globals.inl"
-#include "inlines/natives.inl"
 #include "inlines/utils.inl"
+#include "inlines/natives.inl"
 #include "inlines/tasks.inl"
 #include "inlines/stocks.inl"
 #include "inlines/pathfinding.inl"
@@ -102,7 +102,18 @@ public plugin_init()
 	register_clcmd ("unstuck" , "ClientCommand_UnStick")
 	register_clcmd ("say unstuck" , "ClientCommand_UnStick")
 	register_clcmd ("say /unstuck" , "ClientCommand_UnStick")
+
+	#if defined CMD_DEBUG
+	register_clcmd("addscore", "testcmd_addscore") // 给自己加100积分
+	#endif
 }
+
+#if defined CMD_DEBUG
+public testcmd_addscore(id){
+	gUserScore[id] += 100
+	UpdateFrags(id, gUserScore[id], -1, 1)
+}
+#endif
 
 public plugin_precache(){
 	#if defined DEBUG
@@ -148,6 +159,9 @@ public plugin_natives(){
 
 	register_native("rpg_set_princessArea", "_native_set_princessArea")
 	register_native("rpg_set_monsterArea", "_native_set_monsterArea")
+
+	register_native("rpg_is_monster", "_native_is_monster", 1)
+	register_native("rpg_is_nonplayer", "_native_is_nonplayer", 1)
 }
 
 // 创建

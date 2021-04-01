@@ -13,7 +13,7 @@ new const gSounds[][] = {
 	"rpg/guardmod/zombi_attack_1.wav",
 	"rpg/guardmod/zombi_attack_2.wav",
 	"rpg/guardmod/zombi_attack_3.wav",
-	"rpg/guardmod/salien_die1.wav"
+	"rpg/guardmod/alien_die1.wav"
 }
 
 public plugin_init()

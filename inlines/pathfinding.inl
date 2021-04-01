@@ -22,11 +22,14 @@ walk_in_path(ent){
 	attackradius = attackradius?attackradius:80.0
 	
 	if(enemy <= gMaxPlayers && length2D(origin, goal) <= attackradius && floatabs(origin[2] - goal[2]) <= attackradius * 1.35){ // 到目标处了(攻击距离)
-		ExecuteForward(g_fwAttack, g_fwDummyResult, ent, enemy)
-		SetEntityTurn(ent, goal, 0)
-		if(g_fwDummyResult > 0)
-			return 1
-		return 0
+		// 超过 150 的攻击距离假定为远程攻击 需要首先看到
+		if(attackradius < 150.0 || can_see_entity(ent, enemy)){
+			ExecuteForward(g_fwAttack, g_fwDummyResult, ent, enemy)
+			SetEntityTurn(ent, goal, 0)
+			if(g_fwDummyResult > 0)
+				return 1
+			return 0
+		}
 	}
 
 	static Float:mins[3], Float:maxs[3]
@@ -39,11 +42,14 @@ walk_in_path(ent){
 		pev(ent, pev_absmax, absmaxs1)
 		pev(enemy, pev_absmin, absmins2)
 		pev(enemy, pev_absmax, absmaxs2)
-		if(get_box_distance2(absmins1,absmaxs1,absmins2,absmaxs2)<(attackradius?attackradius:80.0)){
-			ExecuteForward(g_fwAttack, g_fwDummyResult, ent, enemy)
-			if(g_fwDummyResult > 0)
-				return 1
-			return 0
+
+		if(get_box_distance2(absmins1,absmaxs1,absmins2,absmaxs2)<(attackradius?attackradius*attackradius:6400.0)){
+			if(attackradius < 150.0 || can_see_entity(ent, enemy)){
+				ExecuteForward(g_fwAttack, g_fwDummyResult, ent, enemy)
+				if(g_fwDummyResult > 0)
+					return 1
+				return 0
+			}
 		}
 	}
 

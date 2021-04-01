@@ -49,6 +49,8 @@ new gLastFlags[512]
 new laser 
 #endif
 
+#define CMD_DEBUG
+
 // 最多30种
 #define MONSTER_TYPES 30
 new gMTCounter
@@ -86,7 +88,7 @@ new gDoNotCreatePrincess = 0
 new gMonsterEntCounter
 new gMaxMonster = 50
 new gCurLevel = 1, gMaxLevel = 0
-new gLevelScore[MAX_LEVEL]
+new gLevelScore[MAX_LEVEL+1]
 new gLevelName[MAX_LEVEL][32]
 new gUserScore[33], Float:gUserRespawnCD[33], Float:gUserLastDeath[33]
 
