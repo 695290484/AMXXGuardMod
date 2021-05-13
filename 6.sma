@@ -178,14 +178,14 @@ ClownKilled(iEntity, Float:origin[3])
 	global_get(glb_time, fCurTime)
 	new iBoom = engfunc(EngFunc_CreateNamedEntity, engfunc(EngFunc_AllocString, "info_target"))
 	set_pev(iBoom, pev_classname, "clownbox")
-	set_pev(iBoom, pev_solid, SOLID_TRIGGER)
+	set_pev(iBoom, pev_solid, SOLID_NOT)
 	set_pev(iBoom, pev_movetype, MOVETYPE_TOSS)
 	set_pev(iBoom, pev_modelindex, zb2)
 	set_pev(iBoom, pev_nextthink, fCurTime+1.5)
 	set_pev(iBoom, pev_fuser3, fCurTime+20.0)
 	engfunc(EngFunc_SetSize, iBoom, {-5.0, -5.0, 0.0}, {5.0, 5.0, 15.0})
 	engfunc(EngFunc_SetOrigin, iBoom, origin)
-
+	set_pev(iBoom, pev_velocity, Float:{0.0,0.0,0.001})
 	new Float:origin2[3], Float:distance
 
 	static i
