@@ -104,7 +104,7 @@ public rpg_fw_npc_attack(ent, target){
 
 	new Float:fOrigin[3]
 	pev(ent, pev_origin, fOrigin)
-	ClownKilled(ent, fOrigin)
+	ClownKilled(ent, fOrigin, false)
 
 	rpg_animation_g(ent, 7)
 	engfunc(EngFunc_EmitSound, ent, CHAN_BODY, gSounds[random_num(0,2)], 1.0, ATTN_NORM, 0, PITCH_NORM)
@@ -155,8 +155,13 @@ setSpeedByDarkLevel(ent, darkLv){
 /* ============= 怪物技能 ============= */
 
 
-ClownKilled(iEntity, Float:origin[3])
+ClownKilled(iEntity, Float:origin[3], bool:killed=true)
 {
+	if(!killed){
+		set_pev(iEntity, pev_deadflag, DEAD_DYING)
+		set_pev(iEntity, pev_solid, SOLID_NOT)
+		set_pev(iEntity, pev_movetype, MOVETYPE_NONE)
+	}
 
 	static TE_FLAG
 	TE_FLAG |= TE_EXPLFLAG_NODLIGHTS
@@ -231,14 +236,16 @@ public fw_Think_Post(iEntity)
 
 	new Float:fCurTime, Float:fuser3
 	global_get(glb_time, fCurTime)
-	pev(iEntity, pev_nextthink, fuser3)
+	pev(iEntity, pev_fuser3, fuser3)
 	if(fCurTime > fuser3){
 		engfunc(EngFunc_RemoveEntity, iEntity)
 		return
 	}
 
 	if(!pev(iEntity, pev_effects)){
+		set_pev(iEntity, pev_nextthink, fCurTime+1.0)
 		set_pev(iEntity, pev_effects, EF_NODRAW)
+		return
 	}
 
 	new Float:o[3], Float:origin2[3], Float:distance
@@ -264,9 +271,11 @@ public fw_Think_Post(iEntity)
 			new Float:velocity[3]
 			GetVelocityFromOrigin(origin2, o, 900.0, velocity)
 			set_pev(i, pev_velocity, velocity)
-			ExecuteHamB(Ham_TakeDamage, i, iEntity, iEntity, 40.0 - 40.0/120.0*distance, DMG_FALL)
+			ExecuteHamB(Ham_TakeDamage, i, iEntity, iEntity, 40.0 - 40.0/120.0*distance, DMG_BURN)
 
 			e = 1
+
+			ScreenFadeColor(i, 255, 25, 25, 85, 0.5)
 		}
 	}
 	if(e){
@@ -275,6 +284,8 @@ public fw_Think_Post(iEntity)
 		set_pev(iEntity, pev_animtime, fCurTime)
 		set_pev(iEntity, pev_frame, 0.0)
 		set_pev(iEntity, pev_framerate, 1.0)
+		o[2] += 5.0
+		light(o)
 
 		set_pev(iEntity, pev_nextthink, fCurTime+3.1)
 		set_pev(iEntity, pev_fuser3, fCurTime+3.0)
@@ -295,4 +306,53 @@ stock GetVelocityFromOrigin(Float:origin1[3], Float:origin2[3], Float:speed, Flo
 		return
 	
 	xs_vec_div_scalar(velocity, valve, velocity)
+}
+
+light(Float:Origin[3]){
+
+	message_begin(MSG_BROADCAST,SVC_TEMPENTITY);
+	write_byte(TE_DLIGHT);
+	engfunc(EngFunc_WriteCoord, Origin[0]); // x
+	engfunc(EngFunc_WriteCoord, Origin[1]); // y
+	engfunc(EngFunc_WriteCoord, Origin[2]); // z
+	write_byte(7); // radius
+	write_byte(255); // r
+	write_byte(25); // g
+	write_byte(25); // b
+	write_byte(15); // life <<<<<<<<
+	write_byte(2); // decay rate
+	message_end();
+}
+
+ScreenFadeColor(id, r, g, b, alp, Float:fTime=1.0)
+{
+	new msgScreenFade = get_user_msgid("ScreenFade")
+	new Float:amount = 4096.0*fTime
+	new iShort = floatround(amount)
+	message_begin(MSG_ONE, msgScreenFade, {0, 0, 0}, id);
+	write_short(iShort);
+	write_short(iShort);
+	write_short(1<<12); 
+	write_byte(r);
+	write_byte(g); 
+	write_byte(b);
+	write_byte(alp); 
+	message_end();
+
+	new maxplayers = get_maxplayers()
+	for(new i=1;i<=maxplayers;++i)
+	{
+		if(is_user_alive(i)) continue
+		if(!is_user_connected(i) || pev(i, pev_iuser2) != id) continue
+
+		message_begin(MSG_ONE, msgScreenFade, {0, 0, 0}, i);
+		write_short(iShort);
+		write_short(iShort);
+		write_short(1<<12); 
+		write_byte(r);
+		write_byte(g); 
+		write_byte(b);
+		write_byte(alp); 
+		message_end();
+	}
 }
