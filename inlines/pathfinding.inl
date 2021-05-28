@@ -26,8 +26,10 @@ walk_in_path(ent){
 		if(attackradius < 150.0 || can_see_entity(ent, enemy)){
 			ExecuteForward(g_fwAttack, g_fwDummyResult, ent, enemy)
 			SetEntityTurn(ent, goal, 0)
-			if(g_fwDummyResult > 0)
+			if(g_fwDummyResult > 0){
+				set_pev(ent, pev_velocity, Float:{0.0,0.0,0.0001})
 				return 1
+			}
 			return 0
 		}
 	}
@@ -46,8 +48,10 @@ walk_in_path(ent){
 		if(get_box_distance2(absmins1,absmaxs1,absmins2,absmaxs2)<(attackradius?attackradius*attackradius:6400.0)){
 			if(attackradius < 150.0 || can_see_entity(ent, enemy)){
 				ExecuteForward(g_fwAttack, g_fwDummyResult, ent, enemy)
-				if(g_fwDummyResult > 0)
+				if(g_fwDummyResult > 0){
+					set_pev(ent, pev_velocity, Float:{0.0,0.0,0.0001})
 					return 1
+				}
 				return 0
 			}
 		}
@@ -93,8 +97,12 @@ walk_in_path(ent){
 			//	}
 				//server_print("%f,%f,%f",g_way[ent][g_nextPoint[ent]][0],g_way[ent][g_nextPoint[ent]][1],g_way[ent][g_nextPoint[ent]][2])
 			//}
-
-			goal = g_way[ent][g_nextPoint[ent]]
+			
+			new Float:adjustedGoal[3]
+			if(NPC_queueUp(ent, g_way[ent][g_nextPoint[ent]], adjustedGoal)){
+				set_pdata_float(ent, m_flVelocityModifier, 0.1)
+			}
+			goal = adjustedGoal
 
 			angle_vector(angles, 1, angles)
 			static Float:v[3]
@@ -352,4 +360,133 @@ jump(ent, Float:v1[3], Float:out[3]){
 
 	// jump animation
 	ExecuteForward(g_fwJump, g_fwDummyResult, ent)
+}
+
+// 排队行为(ent, 目标路点, 可能会调整后的点)
+// 只能在正常走的时候用,最好是走路点的时候,攻击跳跃都不要用
+// 返回1表示要有礼貌的排队,返回0表示你想怎么走就怎么走,不过最好用调整过的点adjustedGoal
+public NPC_queueUp(ent, Float:goal[3], Float:adjustedGoal[3]){
+	static Float:gtime
+	gtime = get_gametime()
+
+	// initialize "adjusted" goal to current goal
+	adjustedGoal = goal
+
+	static Float:angles[3], Float:eyeOrigin[3]
+	pev(ent, pev_angles, angles)
+	pev(ent, pev_origin, eyeOrigin)
+	eyeOrigin[2] += 5.0
+
+	// Use short "feelers" to veer away from close-range obstacles
+	// Feelers come from our ankles, just above StepHeight, so we avoid short walls, too
+	// Don't use feelers if very near the end of the path, or about to jump
+	// TODO: Consider having feelers at several heights to deal with overhangs, etc.
+	navmesh_feeleradjustment(angles[1], eyeOrigin, adjustedGoal)
+
+	if(NPC_IsFriendInTheWay(ent, goal)){
+		if(!m_isWaitingBehindFriend[ent])
+		{
+			m_isWaitingBehindFriend[ent] = true
+			const Float:politeDuration = 2.0
+			m_politeTimer[ent] = gtime + politeDuration
+			return 1
+		}
+		else if(gtime > m_politeTimer[ent])
+		{
+			m_isWaitingBehindFriend[ent] = false
+		}
+	}
+	else if (m_isWaitingBehindFriend[ent])
+	{
+		// we're done waiting for our friend to move
+		m_isWaitingBehindFriend[ent] = false
+	}
+
+	// Move along our path if there are no friends blocking our way,
+	// or we have run out of patience
+	if (!m_isWaitingBehindFriend[ent] || gtime > m_politeTimer[ent])
+	{
+		// Move along path
+		//MoveTowardsPosition(&adjustedGoal);
+
+		// Stuck check
+		// 如果因为调整后的路点卡住,那么要自己跑出来
+		// ... ...
+	}
+	return 0
+}
+
+bool:NPC_IsFriendInTheWay(ent, Float:goalPos[3]){
+	static Float:gtime
+	gtime = get_gametime()
+
+	// do this check less often to ease CPU burden
+	if(m_avoidFriendTimer[ent] > gtime)
+		return m_isFriendInTheWay[ent]
+
+	const Float:avoidFriendInterval = 0.5
+	m_avoidFriendTimer[ent] = gtime + avoidFriendInterval
+
+	static Float:origin[3]
+	pev(ent, pev_origin, origin)
+
+	// compute ray along intended path
+	static Float:moveDir[3]
+	xs_vec_sub(goalPos, origin, moveDir)
+
+	// make it a unit vector
+	static Float:length
+	length = vector_length(moveDir)
+	if(length > 0)
+		xs_vec_normalize(moveDir, moveDir)
+	else
+	{
+		moveDir[0] = moveDir[1] = 0.0
+		moveDir[2] = 1.0
+	}
+
+	m_isFriendInTheWay[ent] = false
+
+	// check if any friends are overlapping this linear path
+	new others = -1
+	const Float:personalSpace = 100.0;
+	const Float:friendRadius = 30.0;
+
+	static Float:othersOrigin[3], Float:toFriend[3], Float:friendDistAlong, Float:pos[3], Float:tmp[3]
+
+	// check if any friends are overlapping this linear path
+	while((others = engfunc(EngFunc_FindEntityInSphere, others, origin, personalSpace)) > 0){
+		if(others != ent && pev_valid(others) && IsMonster(others) && IsMonsterAlive(others)){
+			pev(others, pev_origin, othersOrigin)
+
+			// compute vector from us to our friend
+			xs_vec_sub(othersOrigin, origin, toFriend)
+
+			// find distance of friend along our movement path
+			friendDistAlong = xs_vec_dot(toFriend, moveDir)
+
+			// if friend is behind us(Monsters), ignore it
+			if (friendDistAlong <= 0.0)
+				continue
+
+			// constrain point to be on path segment
+			if (friendDistAlong >= length)
+				pos = goalPos;
+			else
+			{
+				xs_vec_mul_scalar(moveDir, friendDistAlong, tmp)
+				xs_vec_add(origin, tmp, pos)
+			}
+
+			// check if friend overlaps our intended line of movement
+			xs_vec_sub(pos, othersOrigin, tmp)
+			if(vector_length(tmp) < friendRadius)
+			{
+				m_isFriendInTheWay[ent] = true
+				break
+			}
+		}
+	}
+
+	return m_isFriendInTheWay[ent]
 }

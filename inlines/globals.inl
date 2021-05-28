@@ -38,6 +38,11 @@ new Float:g_checkInterval[512] // 跳跃检测间隔
 new Float:g_stopPathFinding[512] // 暂停寻路
 new Float:g_stopHandsChecking[512] // 暂停双手检测
 
+new m_isFriendInTheWay[512] // 排队判断
+new Float:m_avoidFriendTimer[512]
+new m_isWaitingBehindFriend[512]
+new Float:m_politeTimer[512]
+
 new gLastFlags[512]
 
 #define ANGLES_SMOOTH 18.5
